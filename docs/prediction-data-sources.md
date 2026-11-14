@@ -192,3 +192,36 @@ IDs are explicitly namespaced `espn:`. No canonical NBA crosswalk, original
 publication timestamp, historical pregame roster, injury snapshot, or odds is
 inferred. Source season-type classification is retained as a first filter;
 full-season import must separately audit Cup final and other excluded games.
+
+## Date-range collection
+
+```bash
+.venv/bin/python scripts/collect_prediction_history.py \
+  --start 2025-10-21 --end 2025-10-27
+```
+
+The range is inclusive and uses Eastern game dates. It supports up to 366 dates,
+fetches at most 15 game summaries per date, and pauses between requests. Rerunning
+the same command reuses checksum-verified raw responses and rebuilds the derived
+dataset without appending duplicates. Failed requests have no cache entry and
+can be attempted again on the next run. There are no automatic network retries.
+
+The default output folder is `artifacts/predictions/history/`. Daily sample files
+and raw provenance are retained there. A combined `history-START-END.json` holds
+games, player rows, and daily coverage together, published by replacing a
+temporary file after collection finishes. An interrupted run can resume from
+cached raw records; do not run concurrent collectors against the same folder.
+
+An empty date is valid. Failed dates, rejected games, duplicate IDs across dates,
+and daily caps that omit games mark coverage incomplete and produce exit code 2.
+Successful dates remain available in the partial dataset. Review coverage before
+training. Completeness means all events returned by the daily source were
+validated, not that the source was checked against an independent full schedule.
+The dataset still lacks historical pregame availability, odds, and NBA ID mappings.
+
+First range validation: October 21–27, 2025 produced 53 games and 1,197 played-player
+rows, with every listed event validated and no rejected games. A second run with
+network access disabled in the transport rebuilt the same counts entirely from
+cache. This is a first-week dataset, not a full season or training-ready proof of
+historical feature availability. Next, construct lagged team/rest features and
+expand the training history before fitting or reporting prediction accuracy.
