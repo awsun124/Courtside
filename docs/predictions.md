@@ -13,6 +13,9 @@ separate future projects.
 The first milestone is a reproducible historical baseline. Embeddings and player
 synergy are experiments whose value must be established on later games.
 
+The [data source audit](prediction-data-sources.md) records provider options,
+sample access checks, gaps, and the recommended collection order.
+
 ## System layout
 
 ```mermaid
