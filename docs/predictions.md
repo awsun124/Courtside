@@ -22,6 +22,8 @@ The [first baseline report](prediction-baseline.md) documents the reproducible
 training run, chronological evaluation, and observed limitations.
 The [rolling evaluation specification](prediction-rolling.md) adds full-season
 count audits and predefined multi-season development windows.
+The [Elo benchmark](prediction-elo.md) compares team ratings with the same saved
+logistic predictions before introducing player embeddings and synergy.
 
 ## System layout
 

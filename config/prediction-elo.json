@@ -1,0 +1,9 @@
+{
+  "experiment": "elo-rolling-development-v1",
+  "initial_rating": 1500,
+  "rating_scale": 400,
+  "season_retention": 0.75,
+  "k_candidates": [10, 20, 40],
+  "home_advantage_candidates": [50, 75, 100],
+  "notes": "Simple win/loss Elo variant, not a reproduction of FiveThirtyEight. Select parameters on each existing validation month only."
+}
