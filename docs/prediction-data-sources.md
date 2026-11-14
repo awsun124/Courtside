@@ -159,3 +159,36 @@ an LLM/news agent to collect numeric sports records.
 No fully verified free source for all 2025–26 pregame moneylines at a chosen
 timestamp was established. This limits the market benchmark, not the ability to
 build and evaluate the initial forecasting baseline against game outcomes.
+
+## First validated sample
+
+Implemented a bounded ESPN sample collector first because its historical summary
+endpoint was reachable and allowed inspection of individual games without a
+season-sized archive download. The bulk archive remains a candidate for scale
+and possession training; it is not yet integrated.
+
+Run from the repository root:
+
+```bash
+.venv/bin/python scripts/collect_prediction_sample.py --date 2025-10-21
+```
+
+The default is at most two games; `--max-games` allows up to ten for a single
+Eastern date. Existing raw cache entries are checksum-verified and reused.
+To refetch, use a new `--output` folder so the previous snapshot remains available.
+This command is for inspection, not a season importer. It exits nonzero when
+games are rejected, the sample cap omits listed games, or no games are listed.
+
+Live check: two games validated, 40 played-player rows, no rejected games.
+Houston–Oklahoma City was 124–125; Golden State–Los Angeles Lakers was 119–109.
+The first game went to double overtime. Reported team minute totals were 291/292
+and 240/241 respectively, illustrating rounding. Scoring totals reconcile;
+exact minute/possession reconstruction remains a later check.
+
+Outputs are ignored under `artifacts/predictions/sample/`: original JSON and
+provenance sidecars in `raw/`, plus `sample-2025-10-21.json` with normalized games,
+player logs, rejected-game reasons, limitations, and source references.
+IDs are explicitly namespaced `espn:`. No canonical NBA crosswalk, original
+publication timestamp, historical pregame roster, injury snapshot, or odds is
+inferred. Source season-type classification is retained as a first filter;
+full-season import must separately audit Cup final and other excluded games.
