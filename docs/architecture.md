@@ -1,5 +1,8 @@
 # Architecture
 
+The planned prediction section has a separate [implementation blueprint](predictions.md),
+including model architecture, data contracts, page layout, and backtest rules.
+
 FastAPI collects articles, groups events, calculates scores, and saves briefings
 in SQLite locally or PostgreSQL when DATABASE_URL is set. React reads those snapshots. Opening pages and filtering stories do
 not call news or stats providers.
