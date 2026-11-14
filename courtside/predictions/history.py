@@ -42,7 +42,7 @@ def minutes(value):
 def fetch_bytes(url):
     try:
         response = subprocess.run([
-            "curl", "--disable", "--silent", "--show-error", "--max-time", "20",
+            "curl", "--disable", "--compressed", "--silent", "--show-error", "--max-time", "20",
             "--connect-timeout", "8", "--max-filesize", "5000000", "--proto", "=https",
             "--write-out", "\n%{http_code}", url,
         ], capture_output=True, timeout=23)
@@ -103,7 +103,7 @@ def game_ids(payload, requested_date):
     return result
 
 
-def parse_game(payload, expected_id):
+def parse_result(payload, expected_id):
     header = payload["header"]
     if header["id"] != expected_id:
         raise ValueError("Summary returned a different game")
@@ -130,6 +130,16 @@ def parse_game(payload, expected_id):
         raise ValueError("Expected two distinct teams")
     if sides["home"]["points"] == sides["away"]["points"]:
         raise ValueError("Final NBA game cannot be tied")
+    return dict(game_id=game_id, season=f"{season['year'] - 1}-{str(season['year'])[-2:]}",
+                scheduled_start=played_at, home=sides["home"], away=sides["away"],
+                home_win=sides["home"]["points"] > sides["away"]["points"],
+                neutral_site=competition.get("neutralSite"))
+
+
+def parse_game(payload, expected_id):
+    game = parse_result(payload, expected_id)
+    game_id = game["game_id"]
+    sides = {side: game[side] for side in ("home", "away")}
     players, seen, team_ids = [], set(), set()
     for group in payload["boxscore"]["players"]:
         team_id = identifier(group["team"]["id"])
@@ -178,8 +188,4 @@ def parse_game(payload, expected_id):
         team_players = [p for p in players if p["team_id"] == side["team_id"]]
         if len(team_players) < 5 or sum(p["points"] for p in team_players) != side["points"]:
             raise ValueError("Player points do not reconcile to the final score")
-    game = dict(game_id=game_id, season=f"{season['year'] - 1}-{str(season['year'])[-2:]}",
-                scheduled_start=played_at, home=sides["home"], away=sides["away"],
-                home_win=sides["home"]["points"] > sides["away"]["points"],
-                neutral_site=competition.get("neutralSite"))
     return game, players

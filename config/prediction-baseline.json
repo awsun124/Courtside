@@ -1,0 +1,10 @@
+{
+  "experiment": "team-baseline-development-v1",
+  "train_before": "2024-12-01",
+  "validation_before": "2025-01-01",
+  "test_before": "2025-02-01",
+  "regularization_candidates": [0.01, 0.1, 1.0],
+  "minimum_partition_games": 50,
+  "random_seed": 42,
+  "notes": "Development experiment with a fixed January test; not a market-edge claim or final multi-season evaluation."
+}

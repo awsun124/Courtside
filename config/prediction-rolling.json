@@ -1,0 +1,12 @@
+{
+  "experiment": "team-baseline-rolling-development-v1",
+  "regularization_candidates": [0.01, 0.1, 1.0],
+  "minimum_partition_games": 100,
+  "random_seed": 42,
+  "folds": [
+    {"name": "december-2023", "train_before": "2023-11-01", "validation_before": "2023-12-01", "test_before": "2024-01-01"},
+    {"name": "february-2024", "train_before": "2024-01-01", "validation_before": "2024-02-01", "test_before": "2024-03-01"},
+    {"name": "march-2024", "train_before": "2024-02-01", "validation_before": "2024-03-01", "test_before": "2024-04-01"}
+  ],
+  "notes": "Predefined expanding-history development folds. January 2025 is not used for model selection. Test months must not overlap."
+}

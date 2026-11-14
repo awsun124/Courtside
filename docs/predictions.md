@@ -1,7 +1,8 @@
 # Matchup predictions: implementation blueprint
 
-Status: architecture and contracts only. No trained model, data provider, API,
-or prediction page is implemented yet. Work lives on `feature/matchup-predictions`.
+Status: historical collectors, team features, and an offline logistic-regression
+development baseline are implemented. Player embeddings, synergy, a prediction
+API, and the prediction page remain planned. Work lives on `feature/matchup-predictions`.
 
 ## Scope
 
@@ -17,6 +18,10 @@ The [data source audit](prediction-data-sources.md) records provider options,
 sample access checks, gaps, and the recommended collection order.
 The [baseline feature specification](prediction-features.md) describes implemented
 team inputs, cutoff rules, and historical availability assumptions.
+The [first baseline report](prediction-baseline.md) documents the reproducible
+training run, chronological evaluation, and observed limitations.
+The [rolling evaluation specification](prediction-rolling.md) adds full-season
+count audits and predefined multi-season development windows.
 
 ## System layout
 
