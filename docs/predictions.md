@@ -15,6 +15,8 @@ synergy are experiments whose value must be established on later games.
 
 The [data source audit](prediction-data-sources.md) records provider options,
 sample access checks, gaps, and the recommended collection order.
+The [baseline feature specification](prediction-features.md) describes implemented
+team inputs, cutoff rules, and historical availability assumptions.
 
 ## System layout
 
