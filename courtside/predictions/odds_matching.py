@@ -52,7 +52,8 @@ def parse_schedule(payload):
             if set(sides) != {'home', 'away'} or sides['home'] == sides['away']:
                 raise ValueError('Expected distinct teams')
             games.append(dict(game_id=game_id, scheduled_start=timestamp(competition['date']).isoformat(),
-                              home_team_id=sides['home'], away_team_id=sides['away']))
+                              home_team_id=sides['home'], away_team_id=sides['away'],
+                              neutral_site=competition.get('neutralSite')))
         except (KeyError, ValueError, TypeError, AttributeError):
             rejected.append(dict(reason='Invalid ESPN schedule event'))
     return games, rejected
