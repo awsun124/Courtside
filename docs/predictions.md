@@ -32,6 +32,8 @@ The [identity ablation](prediction-identity-ablation.md) tests that encoder with
 player identity; the initial development results show no clear identity benefit.
 The [synergy experiment](prediction-synergy.md) adds masked teammate attention;
 its initial gain is small and uncertain on the existing development windows.
+The [frozen later-season evaluation](prediction-holdout.md) tests unchanged 2024
+checkpoints on February–April 2025 without fitting or model selection.
 
 ## System layout
 
