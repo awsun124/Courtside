@@ -110,3 +110,7 @@ requirement for both teams. All nonempty projected team rotations were checked
 for 240-minute totals and 48-minute individual caps. Warmup and insufficient-history
 snapshots remain explicit. This validates the pipeline; the batch does not cover
 the 611 benchmark test games or support a new accuracy claim yet.
+
+The [first player-model experiment](prediction-player-model.md) subsequently
+imports complete seasons from a public bulk source, validates them against this
+sample, and expands rotation coverage for the embedding model.

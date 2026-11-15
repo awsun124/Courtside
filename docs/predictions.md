@@ -1,8 +1,8 @@
 # Matchup predictions: implementation blueprint
 
-Status: historical collectors, team features, and an offline logistic-regression
-development baseline are implemented. Player embeddings, synergy, a prediction
-API, and the prediction page remain planned. Work lives on `feature/matchup-predictions`.
+Status: historical collectors, team/player features, offline logistic/Elo
+benchmarks, and a first player-embedding model are implemented. Synergy, a
+prediction API, and the prediction page remain planned. Work lives on `feature/matchup-predictions`.
 
 ## Scope
 
@@ -26,6 +26,8 @@ The [Elo benchmark](prediction-elo.md) compares team ratings with the same saved
 logistic predictions before introducing player embeddings and synergy.
 The [player pipeline](prediction-players.md) collects box-score observations and
 builds lagged statistical vectors with estimated rotations for embedding experiments.
+The [first player model](prediction-player-model.md) expands player coverage to
+both full seasons and trains a minute-weighted encoder as an Elo correction.
 
 ## System layout
 

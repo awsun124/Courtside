@@ -1,0 +1,15 @@
+{
+  "experiment": "player-encoder-development-v1",
+  "embedding_dim": 8,
+  "hidden_dim": 32,
+  "player_dim": 16,
+  "max_players": 40,
+  "dropout": 0.1,
+  "learning_rate": 0.001,
+  "weight_decay": 0.01,
+  "max_epochs": 80,
+  "patience": 12,
+  "batch_size": 128,
+  "seeds": [42, 43, 44],
+  "notes": "No synergy/attention. Player identity plus lagged rates, minute-weighted pooling, and a small correction to the existing Elo logit. Epoch selection uses validation only, including unchanged Elo at epoch zero. Average all seed predictions; never pick a seed on test results."
+}
