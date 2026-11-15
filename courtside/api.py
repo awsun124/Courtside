@@ -2,6 +2,8 @@ from contextlib import asynccontextmanager, suppress
 import asyncio
 import os
 import sqlite3
+from datetime import date as CalendarDate
+from pathlib import Path
 from typing import Literal
 
 from fastapi import FastAPI, HTTPException, Query, Request
@@ -30,12 +32,14 @@ class SampleInvestigationRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
 
-def create_app(database=None, env_file=None, settings_file=None, collector=None, clock=None, investigation_file=None, sources_file=None, scheduled=None):
+def create_app(database=None, env_file=None, settings_file=None, collector=None, clock=None, investigation_file=None, sources_file=None, scheduled=None, predictions_folder=None):
     public_read_only = os.environ.get("COURTSIDE_PUBLIC_READ_ONLY", "false").lower() == "true"
     database_path = database or database_setting()
     origins = [origin.strip() for origin in os.environ.get("COURTSIDE_ALLOWED_ORIGINS", "http://localhost:5173,http://127.0.0.1:5173").split(",") if origin.strip()]
     external_schedule = os.environ.get("COURTSIDE_EXTERNAL_SCHEDULE", "false").lower() == "true"
     automatic = scheduled if scheduled is not None else collector is None and clock is None and not external_schedule
+    prediction_path = Path(predictions_folder or os.environ.get('COURTSIDE_PREDICTIONS_DIR') or
+                           PROJECT_ROOT / 'artifacts/predictions/daily')
 
     @asynccontextmanager
     async def lifespan(app):
@@ -75,6 +79,17 @@ def create_app(database=None, env_file=None, settings_file=None, collector=None,
         from .stats import read_stats, season_for
         service = request.app.state.news
         return read_stats(service.database, season_for(service.clock()), service.clock())
+
+    @app.get('/api/predictions')
+    def predictions(request: Request, day: CalendarDate | None = Query(default=None, alias='date')):
+        from .predictions.history import EASTERN
+        from .predictions.service import read_predictions
+        now = request.app.state.news.clock()
+        selected = day or now.astimezone(EASTERN).date()
+        try:
+            return read_predictions(prediction_path, selected.isoformat(), now)
+        except (ValueError, KeyError, TypeError, OSError, AttributeError, OverflowError):
+            raise HTTPException(503, 'Saved predictions are unavailable. Try again later.') from None
 
     @app.get("/api/briefings/latest")
     def latest(request: Request, mode: DataMode = "live"):

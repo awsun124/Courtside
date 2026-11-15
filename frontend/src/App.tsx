@@ -9,6 +9,7 @@ import { useBriefing } from './useBriefing'
 import SiteHeader from './SiteHeader'
 import RankingPage from './RankingPage'
 import StatsPage from './StatsPage'
+import PredictionsPage from './PredictionsPage'
 import SharedStory from './SharedStory'
 import { useReading, storyKey } from './reading'
 import CollectionActivity from './CollectionActivity'
@@ -17,7 +18,7 @@ import StoryFilters, { useStoryFilters } from './StoryFilters'
 export default function App() {
   return (
     <>
-      {window.location.pathname.replace(/\/$/, '') === '/stats' ? <StatsPage /> : window.location.pathname.replace(/\/$/, '') === '/ranking' ? <RankingPage /> : new URLSearchParams(window.location.search).has('story') ? <SharedStory /> : <Dashboard />}
+      {window.location.pathname.replace(/\/$/, '') === '/predictions' ? <PredictionsPage /> : window.location.pathname.replace(/\/$/, '') === '/stats' ? <StatsPage /> : window.location.pathname.replace(/\/$/, '') === '/ranking' ? <RankingPage /> : new URLSearchParams(window.location.search).has('story') ? <SharedStory /> : <Dashboard />}
       <Analytics />
     </>
   )
