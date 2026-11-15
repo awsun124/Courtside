@@ -34,6 +34,8 @@ The [synergy experiment](prediction-synergy.md) adds masked teammate attention;
 its initial gain is small and uncertain on the existing development windows.
 The [frozen later-season evaluation](prediction-holdout.md) tests unchanged 2024
 checkpoints on February–April 2025 without fitting or model selection.
+The [moneyline collector](prediction-odds.md) reads the server-side odds key,
+caches current quotes, and records free-tier quota usage.
 
 ## System layout
 
