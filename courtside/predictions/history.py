@@ -9,7 +9,7 @@ import subprocess
 from zoneinfo import ZoneInfo
 
 BASE_URL = "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/"
-PARSER_VERSION = 1
+PARSER_VERSION = 2
 EASTERN = ZoneInfo("America/New_York")
 
 
@@ -164,6 +164,11 @@ def parse_game(payload, expected_id):
             if len(athlete["stats"]) != len(labels):
                 raise ValueError("Player statistics do not match columns")
             stats = dict(zip(labels, athlete["stats"]))
+            # Some listed players have no recorded minutes despite didNotPlay=False.
+            # Retain them as observations elsewhere, not as numeric played logs.
+            if stats["MIN"] == "--" and all(value in {"0", "+0", "-0", "0-0", "--"}
+                                               for label, value in stats.items() if label != "MIN"):
+                continue
             row = dict(game_id=game_id, team_id=team_id, player_id=player_id,
                        name=athlete["athlete"]["displayName"], minutes=minutes(stats["MIN"]))
             for source, target in (("PTS", "points"), ("REB", "rebounds"), ("AST", "assists"),

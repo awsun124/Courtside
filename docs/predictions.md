@@ -24,6 +24,8 @@ The [rolling evaluation specification](prediction-rolling.md) adds full-season
 count audits and predefined multi-season development windows.
 The [Elo benchmark](prediction-elo.md) compares team ratings with the same saved
 logistic predictions before introducing player embeddings and synergy.
+The [player pipeline](prediction-players.md) collects box-score observations and
+builds lagged statistical vectors with estimated rotations for embedding experiments.
 
 ## System layout
 
