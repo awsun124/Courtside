@@ -120,3 +120,7 @@ Elo behavior, test-label isolation, and checkpoint reload equivalence. Existing
 time-safe rotation/feature tests remain in place. The next work is the controlled
 identity ablation and player synergy layer, using validation for design choices
 and later reserved data for final claims.
+
+The [completed identity ablation](prediction-identity-ablation.md) now compares
+this model with the same pipeline without identity embeddings. The difference
+was small and uncertain; the original results above are retained unchanged.

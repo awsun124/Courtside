@@ -1,4 +1,4 @@
-"""Offline player encoder: train-only IDs/scaling, weighted pooling, no synergy."""
+"""Offline player encoder with optional masked teammate attention."""
 
 from copy import deepcopy
 import math
@@ -68,32 +68,66 @@ def tensorize(rows, rotations, preprocessing, elo, max_players):
 class PlayerEncoder(nn.Module):
     def __init__(self, vocabulary_size, settings):
         super().__init__()
-        self.embedding = nn.Embedding(vocabulary_size + 1, settings["embedding_dim"], padding_idx=0)
-        nn.init.normal_(self.embedding.weight, std=0.05)
-        with torch.no_grad():
-            self.embedding.weight[0].zero_()
-        self.encoder = nn.Sequential(nn.Linear(settings["embedding_dim"] + len(RATE_NAMES), settings["hidden_dim"]),
+        self.embedding = None
+        identity_dimensions = settings["embedding_dim"] if settings.get("use_identity", True) else 0
+        if identity_dimensions:
+            self.embedding = nn.Embedding(vocabulary_size + 1, identity_dimensions, padding_idx=0)
+            nn.init.normal_(self.embedding.weight, std=0.05)
+            with torch.no_grad():
+                self.embedding.weight[0].zero_()
+        self.encoder = nn.Sequential(nn.Linear(identity_dimensions + len(RATE_NAMES), settings["hidden_dim"]),
             nn.Tanh(), nn.Linear(settings["hidden_dim"], settings["player_dim"]), nn.Tanh())
         self.head = nn.Sequential(nn.Linear(settings["player_dim"] * 3 + len(FEATURE_NAMES), settings["hidden_dim"]),
             nn.Tanh(), nn.Dropout(settings["dropout"]), nn.Linear(settings["hidden_dim"], 1))
         nn.init.zeros_(self.head[-1].weight)
         nn.init.zeros_(self.head[-1].bias)
+        self.synergy = None
+        if settings.get("use_synergy", False):
+            self.synergy = SynergyLayer(settings["player_dim"], settings["synergy_heads"],
+                                        settings["hidden_dim"], settings["dropout"])
 
     def forward(self, ids, rates, weights, context, base_logits):
-        encoded = self.encoder(torch.cat((self.embedding(ids), rates), dim=-1))
+        inputs = torch.cat((self.embedding(ids), rates), dim=-1) if self.embedding is not None else rates
+        encoded = self.encoder(inputs)
+        if self.synergy is not None:
+            batch, sides, players, dimensions = encoded.shape
+            encoded = self.synergy(encoded.reshape(batch * sides, players, dimensions),
+                                   weights.reshape(batch * sides, players) <= 0).reshape(batch, sides, players, dimensions)
         teams = (encoded * weights.unsqueeze(-1)).sum(dim=2)
         home, away = teams[:, 0], teams[:, 1]
         correction = self.head(torch.cat((home, away, home - away, context), dim=-1)).squeeze(-1)
         return base_logits + correction
 
 
+class SynergyLayer(nn.Module):
+    """One attention block over an unordered set of available roster vectors."""
+
+    def __init__(self, dimensions, heads, hidden, dropout):
+        super().__init__()
+        self.attention = nn.MultiheadAttention(dimensions, heads, dropout=dropout, batch_first=True)
+        self.attention_norm = nn.LayerNorm(dimensions)
+        self.feedforward = nn.Sequential(nn.Linear(dimensions, hidden), nn.Tanh(), nn.Linear(hidden, dimensions))
+        self.output_norm = nn.LayerNorm(dimensions)
+
+    def forward(self, players, padding):
+        if padding.all(dim=1).any():
+            raise ValueError("Synergy requires at least one unmasked player per team")
+        attended, _ = self.attention(players, players, players, key_padding_mask=padding, need_weights=False)
+        contextual = self.attention_norm(players + attended)
+        return self.output_norm(contextual + self.feedforward(contextual))
+
+
 def train_fold(partitions, rotations, elo, settings):
-    if (not settings["seeds"] or len(set(settings["seeds"])) != len(settings["seeds"]) or
+    if (type(settings.get("use_identity", True)) is not bool or type(settings.get("use_synergy", False)) is not bool or
+            not settings["seeds"] or len(set(settings["seeds"])) != len(settings["seeds"]) or
             any(type(seed) is not int for seed in settings["seeds"]) or
             any(type(settings[key]) is not int or settings[key] < 1 for key in
                 ("embedding_dim", "hidden_dim", "player_dim", "max_players", "max_epochs", "patience", "batch_size")) or
             not 0 <= settings["dropout"] < 1 or settings["learning_rate"] <= 0 or settings["weight_decay"] < 0):
         raise ValueError("Invalid player model settings")
+    if settings.get("use_synergy", False) and (type(settings.get("synergy_heads")) is not int or
+            settings["synergy_heads"] < 1 or settings["player_dim"] % settings["synergy_heads"]):
+        raise ValueError("Synergy heads must divide the player-vector dimension")
     preprocessing = fit_preprocessing(partitions["train"], rotations)
     data = {name: tensorize(rows, rotations, preprocessing, elo, settings["max_players"])
             for name, rows in partitions.items()}
@@ -201,7 +235,8 @@ def evaluate_players(games, features, rotations_report, rolling_settings, elo_re
                                elo=scores(labels, [r["elo_probability"] for r in predictions])),
                 calibration=calibration(labels, [r["home_probability"] for r in predictions]),
                 limitations=["Development model with approximate rotations and no pregame injury or transaction feed.",
-                             "No explicit synergy or attention layer yet.",
+                             ("One teammate attention block; not observed five-player lineup interactions."
+                              if settings.get("use_synergy", False) else "No explicit synergy or attention layer."),
                              "Elo parameters are inherited from the existing validation-selected benchmark.",
                              "Epoch zero is unchanged Elo; validation may reject learned corrections.",
                              "No sportsbook comparison or final untouched test."]), models

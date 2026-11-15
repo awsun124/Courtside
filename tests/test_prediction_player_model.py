@@ -64,6 +64,31 @@ class PlayerModelTests(unittest.TestCase):
         with torch.no_grad():
             self.assertAlmostEqual(torch.sigmoid(model(*inputs)).item(), 0.6, places=6)
 
+    def test_no_identity_model_cannot_use_player_ids(self):
+        import torch
+        from courtside.predictions.player_model import PlayerEncoder, fit_preprocessing, tensorize
+        preprocessing = fit_preprocessing(self.partitions['train'], self.rotations)
+        inputs, _, _ = tensorize(self.partitions['test'], self.rotations, preprocessing, self.elo, 20)
+        model = PlayerEncoder(len(preprocessing['vocabulary']), {**self.settings, 'use_identity': False}).eval()
+        self.assertIsNone(model.embedding)
+        self.assertFalse(any(name.startswith('embedding') for name, _ in model.named_parameters()))
+        with torch.no_grad():
+            model.head[-1].weight.normal_()
+            before = model(*inputs)
+            changed = (torch.full_like(inputs[0], 99999), *inputs[1:])
+            self.assertTrue(torch.equal(before, model(*changed)))
+
+    def test_explicit_identity_preserves_original_checkpoint_structure(self):
+        import torch
+        from courtside.predictions.player_model import PlayerEncoder
+        torch.manual_seed(42)
+        original = PlayerEncoder(10, self.settings)
+        torch.manual_seed(42)
+        explicit = PlayerEncoder(10, {**self.settings, 'use_identity': True})
+        self.assertEqual(original.state_dict().keys(), explicit.state_dict().keys())
+        for key, value in original.state_dict().items():
+            self.assertTrue(torch.equal(value, explicit.state_dict()[key]))
+
     def test_test_targets_cannot_change_training_selection_or_weights(self):
         import torch
         from courtside.predictions.player_model import train_fold

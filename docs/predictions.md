@@ -1,8 +1,8 @@
 # Matchup predictions: implementation blueprint
 
 Status: historical collectors, team/player features, offline logistic/Elo
-benchmarks, and a first player-embedding model are implemented. Synergy, a
-prediction API, and the prediction page remain planned. Work lives on `feature/matchup-predictions`.
+benchmarks, a player-embedding model, and optional teammate attention are implemented.
+A prediction API and the prediction page remain planned. Work lives on `feature/matchup-predictions`.
 
 ## Scope
 
@@ -28,6 +28,10 @@ The [player pipeline](prediction-players.md) collects box-score observations and
 builds lagged statistical vectors with estimated rotations for embedding experiments.
 The [first player model](prediction-player-model.md) expands player coverage to
 both full seasons and trains a minute-weighted encoder as an Elo correction.
+The [identity ablation](prediction-identity-ablation.md) tests that encoder without
+player identity; the initial development results show no clear identity benefit.
+The [synergy experiment](prediction-synergy.md) adds masked teammate attention;
+its initial gain is small and uncertain on the existing development windows.
 
 ## System layout
 
