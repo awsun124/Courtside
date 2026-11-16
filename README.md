@@ -8,6 +8,6 @@ Built with React, TypeScript, FastAPI, and SQLite.
 
 [Setup](docs/setup.md) · [Architecture](docs/architecture.md) · [Ranking](docs/ranking.md) · [Deployment](docs/deployment.md)
 
-In development: [Matchup prediction architecture and roadmap](docs/predictions.md).
+[NBA prediction model and evaluation](docs/predictions.md) (local development).
 
 Deployed app: [courtside-agent.vercel.app](https://courtside-agent.vercel.app)

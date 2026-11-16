@@ -29,8 +29,11 @@ def collect_results(start, end, output, transport=None, sleep=time.sleep):
         try:
             payload, source = read_source("scoreboard", day.strftime("%Y%m%d"), output, **options)
             sources.append(source)
-            ids = game_ids(payload, day.isoformat())
-            status["listed_games"] = len(ids)
+            # ESPN may list overseas preseason games on the adjacent Eastern date.
+            # Validate day scope for the regular-season inventory this collector uses.
+            regular = dict(payload, events=[event for event in payload["events"] if event["season"]["type"] == 2])
+            game_ids(regular, day.isoformat())
+            status["listed_games"] = len(payload["events"])
             for event in payload["events"]:
                 try:
                     if event["season"]["type"] != 2:

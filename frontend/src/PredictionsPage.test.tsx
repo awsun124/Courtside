@@ -23,10 +23,10 @@ beforeEach(() => {
 it('shows saved probabilities and changes bookmaker without spending a request', async () => {
   render(<PredictionsPage />)
   await screen.findByText('60.0%')
-  expect(screen.getByText('+5.0 pp')).toBeTruthy()
+  expect(screen.getByText('+5.0%')).toBeTruthy()
   expect(screen.getByText('1.80')).toBeTruthy()
   fireEvent.change(screen.getByLabelText('Bookmaker'), { target: { value: 'second_book' } })
-  expect(screen.getByText('+10.0 pp')).toBeTruthy()
+  expect(screen.getByText('+10.0%')).toBeTruthy()
   expect(screen.getByText(/ · Stale quote$/)).toBeTruthy()
   expect(vi.mocked(fetch)).toHaveBeenCalledTimes(1)
   expect(vi.mocked(fetch).mock.calls[0][0]).toMatch(/^\/api\/predictions\?date=\d{4}-\d{2}-\d{2}$/)
@@ -58,4 +58,16 @@ it('shows API errors and allows a read-only retry', async () => {
   fireEvent.click(screen.getByRole('button', { name: 'Reload saved results' }))
   await screen.findByText('60.0%')
   expect(vi.mocked(fetch)).toHaveBeenCalledTimes(2)
+})
+
+it('explains a missed cutoff for older snapshots with a generic missing-model reason', async () => {
+  const saved = data()
+  Object.assign(saved.games[0], { model_status: 'unavailable', model_reason: 'No current model forecast supplied',
+    saved_at: '2026-11-15T22:30:00Z', home_probability: null, away_probability: null })
+  vi.mocked(fetch).mockResolvedValue(new Response(JSON.stringify(saved), { status: 200 }))
+  render(<PredictionsPage />)
+  const note = await screen.findByText(/Prediction unavailable: no forecast was saved by/)
+  expect(note.textContent).toContain('Nov 15, 5:00 PM EST, one hour before tipoff')
+  expect(note.textContent).toContain('Nov 15, 5:30 PM EST, after that deadline')
+  expect(screen.queryByText(/Model unavailable · No current model forecast supplied/)).toBeNull()
 })

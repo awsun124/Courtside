@@ -27,13 +27,14 @@ const time = (value: string) => new Intl.DateTimeFormat('en-US', {
   timeZone: 'America/New_York', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', timeZoneName: 'short',
 }).format(new Date(value))
 const percent = (value: number | null) => value === null ? '—' : `${(value * 100).toFixed(1)}%`
-const difference = (value: number | null) => value === null ? '—' : `${value > 0 ? '+' : ''}${value.toFixed(1)} pp`
+const difference = (value: number | null) => value === null ? '—' : `${value > 0 ? '+' : ''}${value.toFixed(1)}%`
 const bookName = (value: string) => value.replaceAll('_', ' ')
 
 function Matchup({ game }: { game: Game }) {
   const [bookId, setBookId] = useState('')
   const book = game.bookmakers.find(row => row.bookmaker === bookId) ?? game.bookmakers.find(row => row.benchmark_eligible_at_save) ?? game.bookmakers[0]
   const delta = book?.home_difference_percentage_points ?? null
+  const missedCutoff = game.model_status !== 'available' && new Date(game.saved_at) > new Date(game.cutoff_at)
   return <article className="prediction-card" aria-labelledby={`match-${game.game_id}`}>
     <div className="prediction-card-top"><span className="eyebrow">{game.tipoff_passed ? 'SAVED PREGAME FORECAST' : 'UPCOMING MATCHUP'}</span><time dateTime={game.scheduled_start}>{time(game.scheduled_start)}</time></div>
     <h2 id={`match-${game.game_id}`}>{game.away_team}<span>at</span>{game.home_team}</h2>
@@ -45,7 +46,9 @@ function Matchup({ game }: { game: Game }) {
         { name: game.home_team, model: game.home_probability, market: book?.home_market_probability ?? null, delta },
       ].map(side => <tr key={side.name}><th scope="row">{side.name}</th><td className="prediction-probability">{percent(side.model)}</td><td>{percent(side.market)}</td><td>{difference(side.delta)}</td></tr>)}</tbody>
     </table></div>
-    {game.model_status !== 'available' && <p className="prediction-note">Model unavailable · {game.model_reason ?? 'No saved forecast for this game.'}</p>}
+    {game.model_status !== 'available' && <p className="prediction-note">{missedCutoff
+      ? `Prediction unavailable: no forecast was saved by ${time(game.cutoff_at)}, one hour before tipoff. This snapshot was saved at ${time(game.saved_at)}, after that deadline.`
+      : `Model unavailable · ${game.model_reason ?? 'No saved forecast for this game.'}`}</p>}
     {book ? <div className="prediction-market">
       <label>Bookmaker<select value={book.bookmaker} onChange={event => setBookId(event.target.value)}>{game.bookmakers.map(row => <option key={row.bookmaker} value={row.bookmaker}>{bookName(row.bookmaker)}</option>)}</select></label>
       <p>Saved decimal odds: away <strong>{book.away_decimal_odds.toFixed(2)}</strong> · home <strong>{book.home_decimal_odds.toFixed(2)}</strong></p>
@@ -88,6 +91,6 @@ export default function PredictionsPage() {
         <div className="prediction-edition" role="status"><span>{data?.games.length ?? 0} matchups · {forecasts} model forecasts</span><span>{data?.saved_at ? `Latest save ${time(data.saved_at)}` : ''}</span></div>
         {!data?.games.length ? <section className="prediction-empty"><h2>No matchups in this saved edition.</h2><p>No upcoming games were included when it was saved.</p></section> : <section className="prediction-grid" aria-label="Matchup predictions">{data.games.map(game => <Matchup key={`${day}-${game.game_id}`} game={game} />)}</section>}
       </>}
-      <section className="prediction-method" aria-labelledby="prediction-method"><p className="eyebrow">READING THE NUMBERS</p><h2 id="prediction-method">A forecast, with its context.</h2><p>The Elo baseline uses current-season team results with a 24-hour delay. It has no player, injury or roster inputs. Forecasts must be saved at least one hour before tipoff.</p><p>Market probabilities remove the bookmaker’s two-sided margin. Decimal odds are the offered prices; differences are percentage points, not expected returns. Each bookmaker is shown separately.</p><p>These are saved observations. Stale quotes and forecasts after tipoff remain historical records. The first available forecast for each game is retained across daily runs. Live accuracy has not yet been evaluated.</p></section>
+      <section className="prediction-method" aria-labelledby="prediction-method"><p className="eyebrow">READING THE NUMBERS</p><h2 id="prediction-method">A forecast, with its context.</h2><p>The experimental Elo baseline uses current-season team results with a 24-hour delay. It resets team ratings at the start of each season and has no player, injury or roster inputs. This variant has only been evaluated on a small historical sample; broader accuracy validation is still needed.</p><p>We require forecasts to be saved at least one hour before tipoff. For a 5 PM game, the deadline is 4 PM. Runs after that deadline leave the prediction unavailable so late forecasts cannot count as on-time predictions.</p><p>Market probabilities remove the bookmaker’s two-sided margin. Decimal odds are the offered prices; the difference subtracts market probability from model probability and is shown with a % sign, not as an expected return. Each bookmaker is shown separately.</p><p>These are saved observations. Stale quotes and forecasts after tipoff remain historical records. The first available forecast for each game is retained across daily runs. Live accuracy has not yet been evaluated.</p></section>
     </main></div>
 }

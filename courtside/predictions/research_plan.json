@@ -1,0 +1,30 @@
+{
+  "experiment": "margin-strength-research-v1",
+  "development_end_exclusive": "2026-02-01",
+  "final_test_start": "2026-02-01",
+  "final_test_end_exclusive": "2026-04-13",
+  "folds": [
+    ["2023-11-01", "2024-04-15"],
+    ["2024-11-01", "2025-02-01"],
+    ["2025-02-01", "2025-04-14"],
+    ["2025-11-01", "2026-02-01"]
+  ],
+  "minimum_history": 5,
+  "result_delay_hours": 24,
+  "cutoff_minutes": 60,
+  "selection_metric": "pooled chronological validation log loss",
+  "max_candidate_models": 120,
+  "random_seed": 42,
+  "bootstrap_resamples": 2000,
+  "notes": [
+    "Earlier holdouts and January 2026 market results are now development data, not untouched tests.",
+    "Reserve February 1 through April 12, 2026 regular-season results before this experiment; do not collect or score until selection is frozen.",
+    "Compare baseline Elo, margin ratings, opponent-adjusted ridge strength, regularized linear models, conservative boosted trees, and fixed blends.",
+    "No current-game box scores, actual starters, future rosters, market odds or post-cutoff results in features.",
+    "Fit preprocessing and supervised weights on earlier available labels only; rating state may update after each delayed result.",
+    "Keep all eligible games; no confidence filtering to inflate accuracy. Select on probability quality, not a 70 percent target.",
+    "Stop after the bounded search and one final test; report an unsuccessful improvement honestly.",
+    "January FanDuel comparison is secondary development evidence on the same matched subset; a fresh market test is not promised.",
+    "Local research and an inference artifact only; no deployment, merge or replacement of the live default."
+  ]
+}
