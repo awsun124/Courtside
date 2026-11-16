@@ -94,6 +94,6 @@ it('shows confirmed absences and explains historical injury evaluation', async (
   await screen.findByText('Example Star')
   expect(screen.getByText(/Confirmed absences are included/)).toBeTruthy()
   expect(screen.getByText('Out · Included in adjustment')).toBeTruthy()
-  expect(screen.getByText(/retrospective evaluation used official injury reports/)).toBeTruthy()
+  expect(screen.getByText(/player availability and official pregame injury reports/)).toBeTruthy()
   expect(screen.getByRole('link', { name: 'Official NBA injury report' }).getAttribute('href')).toContain('ak-static.cms.nba.com')
 })
