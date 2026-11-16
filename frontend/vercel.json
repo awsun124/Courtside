@@ -4,7 +4,17 @@
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "rewrites": [
-    { "source": "/stats", "destination": "/index.html" },
-    { "source": "/ranking", "destination": "/index.html" }
+    {
+      "source": "/stats",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/ranking",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/predictions",
+      "destination": "/index.html"
+    }
   ]
 }

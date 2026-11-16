@@ -1,0 +1,20 @@
+{
+  "experiment": "frozen-later-season-holdout-v1",
+  "created_at": "2026-11-15T06:39:55.038042+00:00",
+  "git_revision": "02a5d36aaedcd1f9f2830e266a05f7f0b3bbdff7",
+  "test_start": "2025-02-01",
+  "test_end_exclusive": "2025-04-14",
+  "checkpoint_fold": "march-2024",
+  "minimum_history": 5,
+  "cutoff_minutes_before_tipoff": 60,
+  "assumed_result_delay_hours": 24,
+  "bootstrap_seed": 42,
+  "frozen_files": {
+    "artifacts/predictions/player-model/march-2024-metadata.json": "6caffd8ab020b5c3821a8703abbc50e475b735a815ba4934aea3599b07d3648f",
+    "artifacts/predictions/player-model/march-2024-weights.pt": "22a96af91f577be98c28e3a80ba30453cc767723d8ad91184d67e81619970376",
+    "artifacts/predictions/synergy-model/march-2024-metadata.json": "5d41a41391819b6a2f81677a2221752a89f9717ba725893d21f0ffbd56662cac",
+    "artifacts/predictions/synergy-model/march-2024-weights.pt": "9126c99335fc7a497f54612a7149be48e0cd70d1fbd0adcdbe4f49b0d783b9e2",
+    "artifacts/predictions/elo/report.json": "741bbeded3dcfe888696858caa178b558e64bd5d538c68a5de4be34aaccd77fe"
+  },
+  "notes": "February-April 2025 only. January 2025 was inspected during earlier development. Load existing latest-fold weights and parameters; do not fit or select anything on this holdout. Elo ratings and lagged inputs may update from available earlier results, while learned weights remain fixed."
+}

@@ -1,0 +1,18 @@
+{
+  "experiment": "player-synergy-development-v1",
+  "embedding_dim": 8,
+  "hidden_dim": 32,
+  "player_dim": 16,
+  "max_players": 40,
+  "dropout": 0.1,
+  "learning_rate": 0.001,
+  "weight_decay": 0.01,
+  "max_epochs": 80,
+  "patience": 12,
+  "batch_size": 128,
+  "seeds": [42, 43, 44],
+  "use_identity": true,
+  "use_synergy": true,
+  "synergy_heads": 2,
+  "notes": "One masked teammate self-attention block before minute-weighted pooling. No positional encoding. Same folds, seeds, optimizer, and validation-only checkpoint selection as the player encoder; epoch zero remains Elo."
+}

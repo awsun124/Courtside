@@ -23,7 +23,7 @@ it('explains evidence requirements, scoring, sparse coverage, and source limits'
   expect(screen.getByRole('heading', { name: 'Freshness' })).toBeTruthy()
   expect(screen.getByText(/at least two estimated independent reporting groups/)).toBeTruthy()
   expect(screen.getByText(/GNews free access excludes the latest 12 hours/)).toBeTruthy()
-  expect(screen.getByText(/If both rates are zero, growth is zero/)).toBeTruthy()
+  expect(screen.getByText(/Equal or falling rates earn zero/)).toBeTruthy()
   expect(screen.getByRole('cell', { name: '35 / 100' })).toBeTruthy()
   expect(screen.getByText(/These are the default settings/)).toBeTruthy()
 })

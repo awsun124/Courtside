@@ -1,5 +1,8 @@
 # Architecture
 
+The [prediction guide](predictions.md) covers the independent model, evaluation
+and saved forecast API.
+
 FastAPI collects articles, groups events, calculates scores, and saves briefings
 in SQLite locally or PostgreSQL when DATABASE_URL is set. React reads those snapshots. Opening pages and filtering stories do
 not call news or stats providers.
