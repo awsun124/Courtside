@@ -26,6 +26,22 @@ class PredictionReadTests(unittest.TestCase):
         self.assertEqual(result['status'], 'no_snapshot')
         self.assertEqual(list(Path(self.folder.name).iterdir()), [])
 
+    def test_availability_survives_daily_snapshot_with_safe_public_fields(self):
+        self.forecasts['predictions'][0]['availability']=dict(status='applied',base_home_probability=.65,
+            home_probability_change=-.05,experimental=True,coverage='partial',
+            report_url='https://ak-static.cms.nba.com/referee/injury/Injury-Report_test.pdf',
+            report_published_at=NOW.isoformat(),internal_path='/private/report',
+            players=[dict(name='Example Player',status='Out',team_id='espn:2',recent_ppg=30,recent_minutes=35,
+                          estimated_margin_impact=2,private_field='hidden')])
+        report=build_daily(self.matches,'2026-11-15',NOW,self.forecasts)
+        save_daily(self.folder.name,report)
+        result=read_predictions(self.folder.name,'2026-11-15',NOW)
+        note=result['games'][0]['availability']
+        self.assertEqual(note['status'],'applied')
+        self.assertEqual(note['players'][0]['name'],'Example Player')
+        self.assertNotIn('internal_path',note)
+        self.assertNotIn('private_field',note['players'][0])
+
     def test_projection_does_not_expose_internal_sources_and_keeps_historical_difference(self):
         self.report['sources'] = dict(internal_secret='not-public')
         path = save_daily(self.folder.name, self.report)

@@ -1,0 +1,21 @@
+{
+  "experiment": "confirmed-absence-weight-v1",
+  "validation_start": "2026-01-01",
+  "validation_end_exclusive": "2026-02-01",
+  "test_start": "2026-02-01",
+  "test_end_exclusive": "2026-04-13",
+  "weight_candidates": [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 2],
+  "selection": "maximum validation winner accuracy, then minimum log loss, then smaller weight",
+  "cutoff_minutes": 60,
+  "result_delay_hours": 24,
+  "maximum_report_age_hours": 6,
+  "notes": [
+    "February-April base outcomes were previously inspected; this is a retrospective paired comparison, not a new untouched holdout.",
+    "Use out-of-time January base predictions. Select the adjustment weight on January only before computing February-April adjustment performance.",
+    "Use official report PDFs published no later than each game's one-hour cutoff; never infer pregame injuries from actual starters or current-game DNP rows.",
+    "Missing injury reports or lagged player histories retain the base probability. Keep all 501 original test games and separately report report/adjustment coverage.",
+    "Only the scalar injury correction weight is tuned; retain the implemented replacement proxy, team/player caps and 24-hour delay.",
+    "If validation selects zero weight, do not claim injuries improved this model. Report the unweighted experimental adjustment as a prespecified secondary comparison.",
+    "The original 74.9 percent score remains attributed to the base model until the adjusted score is measured."
+  ]
+}

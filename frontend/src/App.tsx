@@ -55,7 +55,6 @@ function Dashboard() {
   const isStale = data?.status.stale || Boolean(!automatic && data?.status.last_successful_refresh && state.now - Date.parse(data.status.last_successful_refresh) > 6 * 3600000)
   const failedAttempt = data?.status.last_attempt?.status === 'failed' || data?.status.last_attempt?.status === 'interrupted'
   const publishers = new Set(briefing?.candidates.flatMap(story => story.publishers) ?? [])
-  const weights = briefing?.settings ?? { coverage_weight: 0.5, momentum_weight: 0.3, freshness_weight: 0.2 }
   const refreshLabel = refreshing ? 'Refreshing…' : 'Refresh briefing'
 
   return <div id="top">
@@ -130,10 +129,7 @@ function Dashboard() {
             <p className="aside-footnote">Several publisher links can carry the same report. Likely copies count once.</p>
           </section>
 
-          <section className="method-panel" id="method"><p className="eyebrow">THE METHOD</p><h2>How the score works.</h2><p>Each story gets a score from three simple measures.</p>
-            {[['Coverage', weights.coverage_weight, 'How many independent publishers cover the event.'], ['Momentum', weights.momentum_weight, 'How quickly new reporting groups are joining the story.'], ['Freshness', weights.freshness_weight, 'The latest development backed by reviewed evidence.']].map(([label, weight, explanation]) => <div className="method-row" key={String(label)}><span className="method-weight">{Math.round(Number(weight) * 100)}<small>%</small></span><div><h3>{label}</h3><p>{explanation}</p></div></div>)}
-            <a className="method-link" href="/ranking">Read the methodology<Icon name="arrow" /></a>
-          </section>
+
 
           {briefing && <CollectionActivity briefing={briefing} />}
           {!!briefing?.sources?.length && <details className="sidebar-details"><summary>Collection sources<Icon name="chevron" /></summary><div className="details-body">

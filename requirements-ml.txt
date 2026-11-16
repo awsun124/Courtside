@@ -1,3 +1,6 @@
 # Offline research only; production requirements remain in requirements.txt.
 scikit-learn==1.8.0
 torch==2.9.1
+
+# Official injury-report ingestion for offline prediction jobs.
+pdfplumber==0.11.9

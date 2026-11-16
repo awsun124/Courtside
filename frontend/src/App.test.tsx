@@ -42,7 +42,6 @@ describe('Court Side dashboard', () => {
     expect(fetchMock.mock.calls.every(([, options]) => options?.method !== 'POST')).toBe(true)
     expect(screen.getByLabelText('Rank 1').textContent).toBe('01')
     expect(screen.getByRole('link', { name: 'How we rank' }).getAttribute('href')).toBe('/ranking')
-    expect(screen.getByRole('link', { name: 'Read the methodology' }).getAttribute('href')).toBe('/ranking')
   })
 
   it('shows related reading separately from scored sources', async () => {

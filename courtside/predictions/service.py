@@ -36,6 +36,16 @@ def public_game(game, saved_at, now):
                forecast_generated_at=game.get('forecast_generated_at') if available else None,
                inputs_as_of=game.get('inputs_as_of') if available else None,
                tipoff_passed=start <= now, bookmakers=[])
+    if available and game.get('availability'):
+        injury=game['availability']
+        row['availability']={key:injury.get(key) for key in ('status','base_home_probability','home_probability_change',
+            'experimental','coverage','reason','report_published_at')}
+        # Public projection excludes source paths and only permits the official report host.
+        url=injury.get('report_url','') or ''
+        if url.startswith('https://ak-static.cms.nba.com/referee/injury/Injury-Report_'):
+            row['availability']['report_url']=url
+        row['availability']['players']=[{key:p.get(key) for key in ('name','status','team_id','recent_ppg','recent_minutes','estimated_margin_impact')}
+            for p in injury.get('players',[])]
     for book in game['bookmakers']:
         available_at, retrieved = timestamp(book['available_at']), timestamp(book['retrieved_at'])
         eligible = book['benchmark_eligible'] is True

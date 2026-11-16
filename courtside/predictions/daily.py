@@ -91,6 +91,8 @@ def build_daily(matches, day, now, forecasts=None):
                            model_version=forecasts['model_version'], home_probability=home,
                            away_probability=1 - home, forecast_generated_at=forecast['generated_at'],
                            inputs_as_of=forecast['inputs_as_of'])
+                if forecast.get('availability') is not None:
+                    row['availability']=forecast['availability']
         market = matched.get(game['game_id'])
         if market is not None:
             if any(market[field] != game[field] for field in

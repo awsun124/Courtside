@@ -71,3 +71,29 @@ it('explains a missed cutoff for older snapshots with a generic missing-model re
   expect(note.textContent).toContain('Nov 15, 5:30 PM EST, after that deadline')
   expect(screen.queryByText(/Model unavailable · No current model forecast supplied/)).toBeNull()
 })
+
+it('shows scoped independent-model evaluation and explains inputs', async () => {
+  render(<PredictionsPage />)
+  await screen.findByText('60.0%')
+  expect(screen.getByRole('heading', { name: 'Built from the game.' })).toBeTruthy()
+  expect(screen.getByText('Accuracy on historical test games')).toBeTruthy()
+  expect(screen.getByText('Correct picks · Feb 1–Apr 12, 2026')).toBeTruthy()
+  expect(screen.getByText(/Elo reached 74.7%/)).toBeTruthy()
+  expect(screen.getByText(/Bookmaker odds are comparison data, never model inputs/)).toBeTruthy()
+})
+
+it('shows confirmed absences and explains historical injury evaluation', async () => {
+  const saved = data()
+  Object.assign(saved.games[0], { model_version: 'margin-strength-availability-v1', availability: {
+    status: 'applied', coverage: 'partial', base_home_probability: 0.65, home_probability_change: -0.05,
+    report_published_at: '2026-11-15T19:45:00Z', report_url: 'https://ak-static.cms.nba.com/referee/injury/Injury-Report_test.pdf',
+    players: [{ name: 'Example Star', team_id: 'espn:2', status: 'Out', recent_ppg: 30, recent_minutes: 35, estimated_margin_impact: 2 }],
+  } })
+  vi.mocked(fetch).mockResolvedValue(new Response(JSON.stringify(saved), { status: 200 }))
+  render(<PredictionsPage />)
+  await screen.findByText('Example Star')
+  expect(screen.getByText(/Confirmed absences are included/)).toBeTruthy()
+  expect(screen.getByText('Out · Included in adjustment')).toBeTruthy()
+  expect(screen.getByText(/retrospective evaluation used official injury reports/)).toBeTruthy()
+  expect(screen.getByRole('link', { name: 'Official NBA injury report' }).getAttribute('href')).toContain('ak-static.cms.nba.com')
+})
