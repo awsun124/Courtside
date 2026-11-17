@@ -2,14 +2,14 @@ import SiteHeader, { briefingLink } from './SiteHeader'
 
 export default function RankingPage() {
   return <div id="top">
-    <title>How we rank | Court Side</title>
+    <title>How stories are ranked | Court Side</title>
     <a className="skip-link" href="#ranking-process">Skip to ranking process</a>
     <SiteHeader page="ranking" />
     <main className="page-shell ranking-page" id="ranking-process">
       <section className="page-intro" aria-labelledby="page-title">
         <div>
           <p className="eyebrow intro-kicker"><span className="small-rule" /> THE METHOD</p>
-          <h1 id="page-title">How we rank<span>.</span></h1>
+          <h1 id="page-title">How stories are ranked<span>.</span></h1>
           <p className="intro-copy">The reporting behind the ranking.<br />Court Side ranks the most-covered stories among the sources we monitor.</p>
         </div>
       </section>

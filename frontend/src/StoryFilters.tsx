@@ -49,7 +49,7 @@ export default function StoryFilters({ filters, onChange, onClear, teamCounts = 
   }
   return <section className="story-filters" aria-label="Filter saved stories">
     <div className="filter-controls">
-      <label className="search-filter">Search saved stories<input type="search" value={filters.query} maxLength={200} placeholder="Player, injury, or keyword" onChange={event => onChange({ ...filters, query: event.target.value })} aria-describedby="search-scope" /></label>
+      <label className="search-filter">Search saved stories<input type="search" value={filters.query} maxLength={200} placeholder="Player, injury, or keyword" onChange={event => onChange({ ...filters, query: event.target.value })} /></label>
       <details className="team-picker" ref={teamPicker}>
         <summary>Teams · {filters.teams.length ? `${filters.teams.length} selected` : 'All teams'}</summary>
         <fieldset><legend>Choose teams</legend><p>Counts show saved stories, including unranked candidates. Teams with no saved coverage will have no matches.</p>
@@ -63,6 +63,5 @@ export default function StoryFilters({ filters, onChange, onClear, teamCounts = 
       {filters.query.trim() && <button aria-label="Clear search" onClick={() => onChange({ ...filters, query: '' })}>Search: {filters.query.trim()}<span aria-hidden="true"> ×</span></button>}
       {filters.storyType !== 'all' && <button aria-label="Remove story type filter" onClick={() => onChange({ ...filters, storyType: 'all' })}>{storyTypes.find(([value]) => value === filters.storyType)?.[1]}<span aria-hidden="true"> ×</span></button>}
     </div>}
-    <p id="search-scope">Search matches any entered word in titles, available summaries, team names, or story types. Filters are remembered in this browser. They use saved stories and keep overall ranks and scores.</p>
   </section>
 }

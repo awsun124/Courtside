@@ -14,7 +14,7 @@ export default function SiteHeader({ page, now = Date.now() }: { page: 'briefing
       <a href={page === 'briefing' ? '#briefing' : `${home}#briefing`} className={page === 'briefing' ? 'active' : undefined} aria-current={page === 'briefing' ? 'page' : undefined}>NBA briefing</a>
       <a href="/stats" className={page === 'stats' ? 'active' : undefined} aria-current={page === 'stats' ? 'page' : undefined}>Stats</a>
       <a href="/predictions" className={page === 'predictions' ? 'active' : undefined} aria-current={page === 'predictions' ? 'page' : undefined}>Predictions</a>
-      <a href={ranking} className={page === 'ranking' ? 'active' : undefined} aria-current={page === 'ranking' ? 'page' : undefined}>How we rank</a>
+      <a href={ranking} className={page === 'ranking' ? 'active' : undefined} aria-current={page === 'ranking' ? 'page' : undefined}>How stories are ranked</a>
     </nav>
     <span className="header-date">{new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric', year: 'numeric' }).format(now)}</span>
   </div></header>

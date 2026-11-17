@@ -76,7 +76,6 @@ function Dashboard() {
   function resetFilters() { clearFilters(); setUnreadOnly(false) }
   const stories = briefing?.stories.filter(matchesFilters) ?? []
   const bookmarks = reader.reading.bookmarks.filter(entry => entry.mode === mode && matchesFilters(entry.story))
-  const nextUpdateMinutes = schedule ? Math.max(0, Math.ceil((Date.parse(schedule.next_update_at) - state.now) / 60000)) : 0
 
   const candidates = briefing?.candidates.filter(story => !story.rank && matchesFilters(story)) ?? []
   const actualDays = briefing ? windowDays(briefing.window_start, briefing.as_of) : null
@@ -92,22 +91,21 @@ function Dashboard() {
 
     <main className="page-shell">
       <section className="page-intro" aria-labelledby="page-title">
-        <div><p className="eyebrow intro-kicker"><span className="small-rule" /> NBA NEWS / THE BRIEFING</p>
+        <div>
           <h1 id="page-title">The NBA briefing<span>.</span></h1>
-          <p className="intro-copy">The most-covered stories across the sources we monitor.<br className="desktop-break" /> Distinct events, original links, and a clear look at the coverage.</p>
+          <p className="intro-copy">The most-covered NBA stories, with the original reporting.</p>
         </div>
-        <div className="edition-mark"><span className="eyebrow">FOLLOW THE REPORTING</span><span className="edition-label">NBA / News</span><span>{automatic ? 'Updated daily at 6 AM Eastern.' : 'Updated when you refresh.'}</span></div>
       </section>
 
       <section className="toolbar" aria-label="Briefing controls">
-        {automatic ? <div className="window-control"><span className="control-label">Coverage window</span><span>Past {actualDays ?? 7} days · Daily edition</span></div> : <div className="window-control"><span className="control-label">Coverage window</span><div className="segmented" aria-label="Coverage window">{[1, 3, 7].map(value => <button key={value} aria-pressed={days === value} disabled={refreshing || loading} onClick={() => state.setDays(value)}>{value} {value === 1 ? 'day' : 'days'}</button>)}</div></div>}
+        {automatic ? <div className="window-control"><span>Past {actualDays ?? 7} days</span></div> : <div className="window-control"><span className="control-label">Coverage window</span><div className="segmented" aria-label="Coverage window">{[1, 3, 7].map(value => <button key={value} aria-pressed={days === value} disabled={refreshing || loading} onClick={() => state.setDays(value)}>{value} {value === 1 ? 'day' : 'days'}</button>)}</div></div>}
         <div className="toolbar-actions">
           {automatic ? <button className="refresh-button" disabled={loading} onClick={state.reload}><Icon name="refresh" />Reload briefing</button> : <button className="refresh-button" disabled={readOnly || refreshing || loading || state.retrySeconds > 0} onClick={() => void state.refresh()}><Icon name="refresh" className={refreshing ? 'spinning' : ''} />{refreshLabel}</button>}
         </div>
       </section>
 
       <div className="status-line"><span><Icon name="clock" />{data?.status.last_successful_refresh ? <>Last refreshed <time dateTime={data.status.last_successful_refresh} title={formatDate(data.status.last_successful_refresh, true)}>{timeAgo(data.status.last_successful_refresh, state.now)}</time></> : 'No updates yet'}</span>
-        <span>{automatic && schedule ? `Next scheduled update in ${Math.floor(nextUpdateMinutes / 60)}h ${nextUpdateMinutes % 60}m · 6 AM Eastern` : state.retrySeconds > 0 ? `Refresh available in ${state.retrySeconds < 60 ? `${state.retrySeconds}s` : `${Math.ceil(state.retrySeconds / 60)} min`}` : refreshing ? 'Reading coverage and checking evidence…' : 'Manual refresh only'}</span>
+        <span>{automatic && schedule ? 'Updated daily at 6 AM Eastern.' : state.retrySeconds > 0 ? `Refresh available in ${state.retrySeconds < 60 ? `${state.retrySeconds}s` : `${Math.ceil(state.retrySeconds / 60)} min`}` : refreshing ? 'Reading coverage and checking evidence…' : 'Manual refresh only'}</span>
       </div>
       {state.error && <div className="notice error-notice" role="alert"><div><strong>Something didn’t load.</strong><p>{state.error}</p></div><button className="text-button" disabled={loading || refreshing} onClick={state.reload}>Reload saved briefing</button></div>}
       {!state.error && failedAttempt && <div className="notice error-notice" role="alert"><strong>The last refresh did not finish.</strong><span>{briefing ? 'Showing the last saved briefing.' : 'No new briefing was saved.'}</span></div>}
@@ -120,13 +118,12 @@ function Dashboard() {
         <label><input type="checkbox" checked={reader.reading.hideSpoilers} onChange={event => reader.setSpoilers(event.target.checked)} />Hide game spoilers</label>
         <label><input type="checkbox" checked={unreadOnly} onChange={event => setUnreadOnly(event.target.checked)} />Unread only</label>
         <button className="text-button" aria-pressed={savedOnly} onClick={() => setSavedOnly(!savedOnly)}>{savedOnly ? 'Show latest stories' : 'Show bookmarks'}</button>
-        <p>Bookmarks and read status stay in this browser. Mark a story as read when you finish it.</p>
       </section>
       {reader.storageError && <p className="notice" role="status">Browser storage is unavailable. Bookmarks and reading choices will last only for this visit.</p>}
 
       <div className="dashboard-layout">
         <section id="briefing" className="news-column" aria-label="NBA briefing" aria-busy={loading || refreshing}>
-          <div className="section-heading"><div><p className="eyebrow">ACROSS THE LEAGUE</p><h2>{savedOnly ? 'Bookmarked stories' : filtered ? 'Matching stories' : 'The stories'}</h2></div><span className="story-count">{savedOnly ? `${bookmarks.length} saved` : briefing ? `${stories.length} / 10` : 'Up to 10'}</span></div>
+          <div className="section-heading"><div><h2>{savedOnly ? 'Bookmarked stories' : filtered ? 'Matching stories' : 'The stories'}</h2></div><span className="story-count">{savedOnly ? `${bookmarks.length} saved` : briefing ? `${stories.length} / 10` : 'Up to 10'}</span></div>
           {briefing && filtered && !savedOnly && <p className="filter-results" role="status">Showing {stories.length} of {briefing.stories.length} ranked stories and {plural(candidates.length, 'unranked candidate')}. Rank numbers refer to the overall briefing.</p>}
           {savedOnly ? <>
             <p className="filter-results">Saved editions keep their original dates, ranks, and scores. Up to 50 bookmarks are kept in this browser.</p>

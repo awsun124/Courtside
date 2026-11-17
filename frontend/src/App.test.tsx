@@ -41,7 +41,7 @@ describe('Court Side dashboard', () => {
     expect(screen.getByText('Provisional')).toBeTruthy()
     expect(fetchMock.mock.calls.every(([, options]) => options?.method !== 'POST')).toBe(true)
     expect(screen.getByLabelText('Rank 1').textContent).toBe('01')
-    expect(screen.getByRole('link', { name: 'How we rank' }).getAttribute('href')).toBe('/ranking')
+    expect(screen.getByRole('link', { name: 'How stories are ranked' }).getAttribute('href')).toBe('/ranking')
   })
 
   it('shows related reading separately from scored sources', async () => {
@@ -226,7 +226,7 @@ describe('Court Side dashboard', () => {
     render(<App />)
     await screen.findByRole('heading', { name: 'Saved NBA game report' })
     expect(screen.getByText('Updated daily at 6 AM Eastern.')).toBeTruthy()
-    expect(screen.getByText(/Next scheduled update in 1h 0m/)).toBeTruthy()
+    expect(screen.queryByText(/Next scheduled update in/)).toBeNull()
     expect(screen.queryByRole('button', { name: 'Refresh briefing' })).toBeNull()
     await userEvent.click(screen.getByRole('button', { name: 'Reload briefing' }))
     expect(fetchMock.mock.calls.every(([, options]) => options?.method !== 'POST')).toBe(true)
