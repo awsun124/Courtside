@@ -1,3 +1,4 @@
+import LoadingDots from './LoadingDots'
 import { useEffect, useState } from 'react'
 import { requestJson } from './api'
 import SiteHeader from './SiteHeader'
@@ -109,7 +110,7 @@ export default function PredictionsPage() {
       </section>
       <div className="toolbar prediction-toolbar"><label htmlFor="prediction-date">Game date <span>(Eastern)</span><input id="prediction-date" type="date" value={day} onChange={event => { if (event.target.value) setDay(event.target.value) }} /></label>
         <button className="refresh-button" disabled={loading} onClick={() => setReload(value => value + 1)}>Reload saved results</button></div>
-      {loading ? <p className="prediction-loading" role="status">Loading saved predictions…</p> : error ? <div className="notice" role="alert">{error}</div> : data?.status === 'no_snapshot' ? <section className="prediction-empty"><p className="eyebrow">NO SAVED EDITION</p><h2>No predictions saved for this date.</h2><p>Try another game date.</p></section> : <>
+      {loading ? <p className="prediction-loading" role="status"><LoadingDots />Loading saved predictions…</p> : error ? <div className="notice" role="alert">{error}</div> : data?.status === 'no_snapshot' ? <section className="prediction-empty"><p className="eyebrow">NO SAVED EDITION</p><h2>No predictions saved for this date.</h2><p>Try another game date.</p></section> : <>
         <div className="prediction-edition" role="status"><span>{data?.games.length ?? 0} matchups · {forecasts} model forecasts</span><span>{data?.saved_at ? `Updated ${time(data.saved_at)}` : ''}</span></div>
         {!data?.games.length ? <section className="prediction-empty"><h2>No matchups for this date.</h2><p>Check another game date.</p></section> : <section className="prediction-grid" aria-label="Matchup predictions">{data.games.map(game => <Matchup key={`${day}-${game.game_id}`} game={game} />)}</section>}
       </>}

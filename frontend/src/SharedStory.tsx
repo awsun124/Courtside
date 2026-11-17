@@ -1,3 +1,4 @@
+import LoadingDots from './LoadingDots'
 import { useEffect, useState } from 'react'
 import { requestJson } from './api'
 import { formatDate } from './format'
@@ -38,7 +39,7 @@ export default function SharedStory() {
       {error ? <p role="alert">{error}</p> : story && briefing ? <>
         <p>Saved edition · {formatDate(briefing.as_of, true)}. Rank and score reflect that edition.</p>
         <StoryCard story={story} briefing={briefing} mode={mode} reader={reader} />
-      </> : <p role="status">Loading saved story…</p>}
+      </> : <p role="status"><LoadingDots />Loading saved story…</p>}
     </main>
   </>
 }

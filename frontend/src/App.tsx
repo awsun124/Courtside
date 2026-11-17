@@ -1,4 +1,6 @@
-import { useState } from 'react'
+import LoadingDots from './LoadingDots'
+import { useEffect, useState } from 'react'
+import { flushSync } from 'react-dom'
 import { Analytics } from '@vercel/analytics/react'
 import type { Story } from './types'
 import { matchesSearch } from './search'
@@ -15,9 +17,37 @@ import { useReading, storyKey } from './reading'
 import StoryFilters, { useStoryFilters } from './StoryFilters'
 
 export default function App() {
+  const [location, setLocation] = useState(() => window.location.href)
+  useEffect(() => {
+    function renderLocation() {
+      const update = () => flushSync(() => setLocation(window.location.href))
+      if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches && document.startViewTransition) {
+        document.startViewTransition(update)
+      } else update()
+    }
+    function navigate(event: MouseEvent) {
+      if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return
+      const link = event.target instanceof Element ? event.target.closest<HTMLAnchorElement>('.site-header a') : null
+      if (!link || link.target || link.hasAttribute('download')) return
+      const url = new URL(link.href)
+      if (url.origin !== window.location.origin || !['/', '/ranking', '/stats', '/predictions'].includes(url.pathname)) return
+      if (url.pathname === window.location.pathname && url.search === window.location.search) return
+      event.preventDefault()
+      window.history.pushState(null, '', url)
+      renderLocation()
+      window.scrollTo(0, 0)
+    }
+    window.addEventListener('popstate', renderLocation)
+    document.addEventListener('click', navigate)
+    return () => {
+      window.removeEventListener('popstate', renderLocation)
+      document.removeEventListener('click', navigate)
+    }
+  }, [])
+  const url = new URL(location)
   return (
     <>
-      {window.location.pathname.replace(/\/$/, '') === '/predictions' ? <PredictionsPage /> : window.location.pathname.replace(/\/$/, '') === '/stats' ? <StatsPage /> : window.location.pathname.replace(/\/$/, '') === '/ranking' ? <RankingPage /> : new URLSearchParams(window.location.search).has('story') ? <SharedStory /> : <Dashboard />}
+      {url.pathname.replace(/\/$/, '') === '/predictions' ? <PredictionsPage /> : url.pathname.replace(/\/$/, '') === '/stats' ? <StatsPage /> : url.pathname.replace(/\/$/, '') === '/ranking' ? <RankingPage /> : url.searchParams.has('story') ? <SharedStory /> : <Dashboard />}
       <Analytics />
     </>
   )
@@ -102,7 +132,7 @@ function Dashboard() {
             <p className="filter-results">Saved editions keep their original dates, ranks, and scores. Up to 50 bookmarks are kept in this browser.</p>
             {bookmarks.length === 0 && <p className="empty-ranking">No bookmarks match this view. Bookmark a story or adjust your filters.</p>}
             {bookmarks.map(entry => <div key={`${entry.mode}-${entry.story.id}`}><p className="bookmark-edition">Saved edition · {formatDate(entry.briefing.as_of, true)}</p><StoryCard story={entry.story} briefing={entry.briefing} mode={entry.mode} reader={reader} /></div>)}
-          </> : loading && !briefing ? <div className="loading-state" role="status"><div className="loading-line" /><h3>Loading the saved briefing…</h3><p>Getting the latest edition.</p></div>
+          </> : loading && !briefing ? <div className="loading-state" role="status"><LoadingDots /><h3>Loading the saved briefing…</h3><p>Getting the latest edition.</p></div>
             : !briefing ? <div className="empty-state"><span className="empty-number">00</span><h3>{state.error ? 'The briefing is unavailable.' : 'The first briefing starts here.'}</h3><p>{state.error ? 'Your saved news will appear when the API is available again.' : automatic ? 'News is collected daily at 6 AM Eastern while the server is running.' : 'Refresh to collect recent NBA coverage.'}</p>
                 {!state.error && !automatic && <button className="secondary-button" disabled={readOnly || refreshing || loading || state.retrySeconds > 0} onClick={() => void state.refresh()}>Collect the first briefing<Icon name="arrow" /></button>}
               </div>
