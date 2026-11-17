@@ -4,7 +4,7 @@ An automated NBA briefing, stats dashboard and independent game prediction syste
 Groups news into distinct stories, ranks the coverage, and records pregame win
 probabilities alongside bookmaker odds and final results.
 
-**[Live demo](https://courtside-agent.vercel.app)** · [Setup](docs/setup.md) · [Model & evaluation](docs/predictions.md)
+**[Deployed site](https://courtside-agent.vercel.app)** · [Setup](docs/setup.md) · [Model & evaluation](docs/predictions.md)
 
 ## What it does
 
