@@ -172,7 +172,7 @@ details > summary:hover { color: var(--accent); }
  .loading-dots { display: inline-flex; align-items: center; gap: 7px; height: 24px; margin-right: 12px; vertical-align: middle; }
 .loading-dots > span { width: 9px; height: 9px; border-radius: 50%; background: var(--accent); animation: courtside-bounce 1100ms ease-in-out infinite; }
 .loading-dots > span:nth-child(2) { background: #bd7751; animation-delay: 130ms; }
-.loading-dots > span:nth-child(3) { background: #858d70; animation-delay: 260ms; }
+.loading-dots > span:nth-child(3) { background: #d39a45; animation-delay: 260ms; }
 .loading-state > .loading-dots { display: flex; margin: 0 0 20px; }
 @keyframes courtside-bounce { 0%, 55%, 100% { transform: translateY(0); } 28% { transform: translateY(-7px); } }
 .briefing-sidebar { display: grid; gap: 25px; }
