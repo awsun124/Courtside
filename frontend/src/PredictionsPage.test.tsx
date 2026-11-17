@@ -120,3 +120,25 @@ it('shows recorded live accuracy and settled results separately from historical 
   expect(screen.getByText(/2 predictions awaiting final results/)).toBeTruthy()
   expect(screen.getByText(/Historical research games are excluded/)).toBeTruthy()
 })
+
+it('browses recorded results without mixing pending or unavailable picks into wins', async () => {
+  const saved = data()
+  const correct = { ...saved.games[0], result: { home_points: 110, away_points: 100, correct: true } }
+  const pending = { ...saved.games[0], game_id: 'pending', home_team: 'Pending home', bookmakers: [] }
+  const unavailable = { ...pending, game_id: 'missing', home_team: 'Missing home', model_status: 'unavailable', home_probability: null, away_probability: null }
+  vi.mocked(fetch).mockImplementation(async () => new Response(JSON.stringify({ ...saved, games: [correct, pending, unavailable] }), { status: 200 }))
+  render(<PredictionsPage />)
+  await screen.findByRole('region', { name: 'Matchup predictions' })
+  fireEvent.click(screen.getByRole('button', { name: 'Past results' }))
+  const history = await screen.findByRole('region', { name: 'Prediction results' })
+  expect(within(history).getByText('Correct')).toBeTruthy()
+  expect(within(history).getByText('100–110')).toBeTruthy()
+  expect(within(history).getByText('Pending')).toBeTruthy()
+  expect(within(history).getByText('Not graded')).toBeTruthy()
+  expect(screen.queryByRole('region', { name: 'Matchup predictions' })).toBeNull()
+  fireEvent.change(screen.getByLabelText(/Game date/), { target: { value: '2026-11-16' } })
+  await screen.findByRole('region', { name: 'Prediction results' })
+  fireEvent.click(screen.getByRole('button', { name: 'Previous game date' }))
+  await screen.findByRole('region', { name: 'Prediction results' })
+  expect(vi.mocked(fetch).mock.calls.at(-1)?.[0]).toBe('/api/predictions?date=2026-11-15')
+})

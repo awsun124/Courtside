@@ -84,6 +84,12 @@ export default function PredictionsPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [reload, setReload] = useState(0)
+  const [view, setView] = useState<'matchups' | 'results'>('matchups')
+  function shiftDay(amount: number) {
+    const next = new Date(`${day}T12:00:00Z`)
+    next.setUTCDate(next.getUTCDate() + amount)
+    setDay(next.toISOString().slice(0, 10))
+  }
   useEffect(() => {
     if (!day) return
     const controller = new AbortController()
@@ -108,12 +114,21 @@ export default function PredictionsPage() {
         {data?.performance?.games ? <><div className="prediction-live-score"><strong>{percent(data.performance.accuracy)}</strong><span>{data.performance.correct} of {data.performance.games} correct winners</span></div><p>Recorded predictions matched with final game results. Each game uses the latest forecast saved at least one hour before tipoff. Historical research games are excluded.</p><details><summary>Monthly results</summary><ul>{data.performance.months.map(month => <li key={month.month}>{month.month} · {month.correct}/{month.games} correct · {percent(month.accuracy)}</li>)}</ul></details></> : <p>Results appear here as games finish. Only predictions recorded before tipoff count toward this record.</p>}
         {!!data?.performance?.pending_games && <p>{data.performance.pending_games} predictions awaiting final results.</p>}
       </section>
-      <div className="toolbar prediction-toolbar"><label htmlFor="prediction-date">Game date <span>(Eastern)</span><input id="prediction-date" type="date" value={day} onChange={event => { if (event.target.value) setDay(event.target.value) }} /></label>
+      <div className="prediction-view-controls" aria-label="Prediction view"><button aria-pressed={view === 'matchups'} onClick={() => { setView('matchups'); setDay(easternDate()) }}>Upcoming matchups</button><button aria-pressed={view === 'results'} onClick={() => { setView('results'); if (day >= easternDate()) { const yesterday = new Date(`${easternDate()}T12:00:00Z`); yesterday.setUTCDate(yesterday.getUTCDate() - 1); setDay(yesterday.toISOString().slice(0, 10)) } }}>Past results</button></div>
+      <div className="toolbar prediction-toolbar"><div className="prediction-date-controls"><button className="text-button" aria-label="Previous game date" onClick={() => shiftDay(-1)}>←</button><label htmlFor="prediction-date">Game date <span>(Eastern)</span><input id="prediction-date" type="date" value={day} onChange={event => { if (event.target.value) setDay(event.target.value) }} /></label><button className="text-button" aria-label="Next game date" onClick={() => shiftDay(1)}>→</button></div>
         <button className="refresh-button" disabled={loading} onClick={() => setReload(value => value + 1)}>Reload saved results</button></div>
       {loading ? <p className="prediction-loading" role="status"><LoadingDots />Loading saved predictions…</p> : error ? <div className="notice" role="alert">{error}</div> : data?.status === 'no_snapshot' ? <section className="prediction-empty"><p className="eyebrow">NO SAVED EDITION</p><h2>No predictions saved for this date.</h2><p>Try another game date.</p></section> : <>
         <div className="prediction-edition" role="status"><span>{data?.games.length ?? 0} matchups · {forecasts} model forecasts</span><span>{data?.saved_at ? `Updated ${time(data.saved_at)}` : ''}</span></div>
-        {!data?.games.length ? <section className="prediction-empty"><h2>No matchups for this date.</h2><p>Check another game date.</p></section> : <section className="prediction-grid" aria-label="Matchup predictions">{data.games.map(game => <Matchup key={`${day}-${game.game_id}`} game={game} />)}</section>}
+        {!data?.games.length ? <section className="prediction-empty"><h2>No matchups for this date.</h2><p>Check another game date.</p></section> : view === 'results' ? <PredictionResults games={data.games} /> : <section className="prediction-grid" aria-label="Matchup predictions">{data.games.map(game => <Matchup key={`${day}-${game.game_id}`} game={game} />)}</section>}
       </>}
       <section className="prediction-method" aria-labelledby="prediction-method"><p className="eyebrow">READING THE NUMBERS</p><h2 id="prediction-method">A few things to know.</h2><p>Forecasts use our NBA prediction model with confirmed injuries, recent player minutes and team results. If injury data is missing, the forecast uses the team-based model.</p><p>Market shows the bookmaker’s win probability with its margin removed. Difference compares our prediction with that probability.</p></section>
     </main></div>
+}
+
+function PredictionResults({ games }: { games: Game[] }) {
+  return <section className="prediction-history" aria-label="Prediction results"><div className="stats-table-wrap"><table className="stats-table"><caption>Recorded picks and final scores</caption><thead><tr><th scope="col">Matchup</th><th scope="col">Model pick</th><th scope="col">Final score</th><th scope="col">Result</th></tr></thead><tbody>{games.map(game => {
+    const available = game.model_status === 'available' && game.home_probability !== null && game.away_probability !== null
+    const homePick = (game.home_probability ?? 0) >= .5
+    return <tr key={game.game_id}><th scope="row">{game.away_team}<span className="history-at"> at </span>{game.home_team}</th><td>{available ? <>{homePick ? game.home_team : game.away_team}<small>{percent(homePick ? game.home_probability : game.away_probability)}</small></> : 'Unavailable'}</td><td>{game.result ? `${game.result.away_points}–${game.result.home_points}` : '—'}</td><td>{game.result ? <span className={game.result.correct ? 'history-correct' : 'history-incorrect'}>{game.result.correct ? 'Correct' : 'Incorrect'}</span> : available ? 'Pending' : 'Not graded'}</td></tr>
+  })}</tbody></table></div></section>
 }

@@ -33,3 +33,21 @@ jobs:
       - name: Validate configuration
         run: python -c "import os; assert os.environ.get('DATABASE_URL', '').startswith(('postgres://', 'postgresql://')), 'Set the DATABASE_URL repository secret'"
       - run: python -m scripts.collect_daily
+
+  notify:
+    needs: collect
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/github-script@v7
+        env:
+          COLLECTION_RESULT: ${{ needs.collect.result }}
+        with:
+          script: |
+            const report = require('./.github/scripts/report-collection.cjs')
+            await report({github, context, core, result: process.env.COLLECTION_RESULT})

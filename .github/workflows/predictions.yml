@@ -41,3 +41,21 @@ jobs:
         run: python -c "import os; assert os.environ.get('DATABASE_URL', '').startswith(('postgres://', 'postgresql://')), 'Set the DATABASE_URL repository secret'"
       - name: Refresh predictions, injuries and game results
         run: python -m courtside.predictions.production
+
+  notify:
+    needs: predict
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/github-script@v7
+        env:
+          COLLECTION_RESULT: ${{ needs.predict.result }}
+        with:
+          script: |
+            const report = require('./.github/scripts/report-collection.cjs')
+            await report({github, context, core, result: process.env.COLLECTION_RESULT})
