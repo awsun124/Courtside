@@ -48,7 +48,7 @@ it('shows missing forecasts and markets without sample probabilities', async () 
   vi.mocked(fetch).mockResolvedValue(new Response(JSON.stringify(saved), { status: 200 }))
   render(<PredictionsPage />)
   await screen.findByText(/One-hour prediction cutoff passed/)
-  expect(screen.getByText(/No matched odds were saved/)).toBeTruthy()
+  expect(screen.getByText(/Bookmaker odds are unavailable/)).toBeTruthy()
   expect(screen.queryByText('60.0%')).toBeNull()
 })
 it('shows API errors and allows a read-only retry', async () => {
@@ -91,9 +91,32 @@ it('shows confirmed absences and explains historical injury evaluation', async (
   } })
   vi.mocked(fetch).mockResolvedValue(new Response(JSON.stringify(saved), { status: 200 }))
   render(<PredictionsPage />)
-  await screen.findByText('Example Star')
+  await screen.findAllByText('Example Star')
   expect(screen.getByText(/Confirmed absences are included/)).toBeTruthy()
   expect(screen.getByText('Out · Included in adjustment')).toBeTruthy()
   expect(screen.getByText(/player availability and official pregame injury reports/)).toBeTruthy()
   expect(screen.getByRole('link', { name: 'Official NBA injury report' }).getAttribute('href')).toContain('ak-static.cms.nba.com')
+})
+
+it('hides market comparison columns when no bookmaker prices exist', async () => {
+  const saved = data()
+  saved.games[0].bookmakers = []
+  vi.mocked(fetch).mockResolvedValue(new Response(JSON.stringify(saved), { status: 200 }))
+  render(<PredictionsPage />)
+  await screen.findByText('60.0%')
+  expect(screen.queryByRole('columnheader', { name: 'Market' })).toBeNull()
+  expect(screen.queryByRole('columnheader', { name: 'Difference' })).toBeNull()
+})
+
+it('shows recorded live accuracy and settled results separately from historical research', async () => {
+  const saved = data()
+  Object.assign(saved, { performance: { games: 10, correct: 7, accuracy: 0.7, pending_games: 2,
+    first_date: '2026-11-01', last_date: '2026-11-14', months: [{ month: '2026-11', games: 10, correct: 7, accuracy: 0.7 }] } })
+  Object.assign(saved.games[0], { result: { home_points: 110, away_points: 100, correct: true } })
+  vi.mocked(fetch).mockResolvedValue(new Response(JSON.stringify(saved), { status: 200 }))
+  render(<PredictionsPage />)
+  await screen.findByText('7 of 10 correct winners')
+  expect(screen.getByText('Correct winner')).toBeTruthy()
+  expect(screen.getByText(/2 predictions awaiting final results/)).toBeTruthy()
+  expect(screen.getByText(/Historical research games are excluded/)).toBeTruthy()
 })

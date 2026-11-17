@@ -1,0 +1,145 @@
+{
+  "feature_version": "margin-strength-v1",
+  "selected": {
+    "spec": {
+      "name": "refined-blend-ridge-compact-30-13.5-0.25",
+      "kind": "blend",
+      "members": [
+        {
+          "name": "blend-ridge-compact-100-12-normal-margin_0.06-15-0.25",
+          "kind": "blend",
+          "members": [
+            {
+              "name": "ridge-compact-100-12",
+              "kind": "ridge",
+              "columns": [
+                "home_court",
+                "elo_logit",
+                "margin_0.03",
+                "margin_0.06",
+                "margin_0.1",
+                "srs_60",
+                "srs_120",
+                "srs_240",
+                "rest_difference",
+                "home_back_to_back",
+                "away_back_to_back"
+              ],
+              "alpha": 100,
+              "sigma": 12
+            },
+            {
+              "name": "normal-margin_0.06-15",
+              "kind": "normal",
+              "columns": [
+                "margin_0.06"
+              ],
+              "sigma": 15
+            }
+          ],
+          "weights": [
+            0.75,
+            0.25
+          ]
+        },
+        {
+          "name": "ridge-compact-30-13.5",
+          "kind": "ridge",
+          "columns": [
+            "home_court",
+            "elo_logit",
+            "margin_0.03",
+            "margin_0.06",
+            "margin_0.1",
+            "srs_60",
+            "srs_120",
+            "srs_240",
+            "rest_difference",
+            "home_back_to_back",
+            "away_back_to_back"
+          ],
+          "alpha": 30,
+          "sigma": 13.5
+        }
+      ],
+      "weights": [
+        0.75,
+        0.25
+      ]
+    },
+    "validation": {
+      "games": 2943,
+      "accuracy": 0.6588515120625212,
+      "brier": 0.2111290624425421,
+      "log_loss": 0.6095322540820365
+    },
+    "folds": [
+      {
+        "games": 1149,
+        "accuracy": 0.6562228024369017,
+        "brier": 0.20937565960186327,
+        "log_loss": 0.6053330096094232
+      },
+      {
+        "games": 628,
+        "accuracy": 0.6624203821656051,
+        "brier": 0.213062240138692,
+        "log_loss": 0.612752189171068
+      },
+      {
+        "games": 519,
+        "accuracy": 0.6859344894026975,
+        "brier": 0.19851399277712878,
+        "log_loss": 0.5819905483237529
+      },
+      {
+        "games": 647,
+        "accuracy": 0.6383307573415765,
+        "brier": 0.22248585599293985,
+        "log_loss": 0.6359572277322221
+      }
+    ]
+  },
+  "last_training_label_available": "2026-02-01T03:00:00+00:00",
+  "model_sha256": "d6f4691b9e64f68636e74530250985bb2e27a7b59d38a487363975e1e094f5b0",
+  "components": [
+    [
+      {
+        "coefficients": [
+          3.017565380068845,
+          0.9158848919137771,
+          0.15324684465893137,
+          0.057377428332275264,
+          0.13805858339654206,
+          0.43430883655440544,
+          0.20606361837677967,
+          -0.006435584167661189,
+          0.13053599280208183,
+          -2.3246050264449187,
+          2.7663688649864033
+        ],
+        "intercept": -4.329844767059173
+      },
+      null
+    ],
+    {
+      "coefficients": [
+        2.9661848128412416,
+        0.9738876049171832,
+        0.20463980125135184,
+        -0.10663752281769585,
+        0.18926209839650765,
+        0.557500316453264,
+        0.22688017551419543,
+        -0.0643766186185028,
+        0.10381317684415725,
+        -2.4128845251324993,
+        2.8533325526581046
+      ],
+      "intercept": -4.368518526947527
+    }
+  ],
+  "history_sha256": "3cc79348906ffbccfed8955546d4bb34bc47e3a8f12c14944888004766ca6e1e",
+  "history_games": 4920,
+  "injury_weight": 0.25
+}

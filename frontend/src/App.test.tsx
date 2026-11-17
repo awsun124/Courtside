@@ -55,7 +55,7 @@ describe('Court Side dashboard', () => {
     await screen.findByRole('heading', { name: 'Saved NBA game report' })
     fireEvent.click(screen.getByText('Related reading'))
     expect(screen.getByRole('link', { name: 'Analysis of the same matchup' }).getAttribute('href')).toBe('https://context.example.com/analysis')
-    expect(screen.getByText(/These links do not count toward the score/)).toBeTruthy()
+    expect(screen.getByText(/Not included in the score/)).toBeTruthy()
     expect(fetchMock.mock.calls.some(([path]) => String(path).startsWith('/api/stories/'))).toBe(false)
   })
 
@@ -365,7 +365,7 @@ describe('Court Side dashboard', () => {
     expect(screen.getByText('0 / 10')).toBeTruthy()
   })
 
-  it('shows the actual score breakdown and source investigation activity', async () => {
+  it('shows the score breakdown without internal activity panels', async () => {
     serve()
     render(<App />)
     await screen.findByRole('heading', { name: 'Saved NBA game report' })
@@ -373,10 +373,8 @@ describe('Court Side dashboard', () => {
     expect(screen.getByText('12.50 / 50')).toBeTruthy()
     expect(screen.getByText('20.00 / 30')).toBeTruthy()
     expect(screen.getByText(/No reviewed development yet/)).toBeTruthy()
-    await userEvent.click(screen.getByText('Evidence check'))
-    expect(screen.getByText('Looked for related reporting')).toBeTruthy()
-    expect(screen.getByText('Rules-based source check · complete')).toBeTruthy()
-    expect(screen.getByText(/A substantive update has not been established/)).toBeTruthy()
+    expect(screen.queryByText('Evidence check')).toBeNull()
+    expect(screen.queryByText('Collection activity')).toBeNull()
   })
 
   it('retrieves source details for the exact briefing only when expanded', async () => {
@@ -409,7 +407,7 @@ describe('Court Side dashboard', () => {
     const groups = screen.getByLabelText('Reporting groups')
     expect(within(groups).getByText('Reporting group 1')).toBeTruthy()
     expect(within(groups).getByRole('link', { name: 'third.example.com' }).getAttribute('href')).toBe('https://third.example.com/copy')
-    expect(within(groups).getByText(/These links count together/)).toBeTruthy()
+    expect(within(groups).getByText(/These links count as one reporting group/)).toBeTruthy()
     expect(within(groups).queryByText('Reporting group 3')).toBeNull()
   })
 
@@ -432,7 +430,7 @@ describe('Court Side dashboard', () => {
     expect(within(updates).getByText('Reported unavailable')).toBeTruthy()
     expect(within(updates).getByText('Reported available')).toBeTruthy()
     expect(within(updates).getByRole('link', { name: story.title }).getAttribute('href')).toBe('https://second.example.com/return')
-    expect(within(updates).getByText(/Availability inferred from saved headlines and excerpts/)).toBeTruthy()
+    expect(within(updates).getByText(/Reported availability/)).toBeTruthy()
   })
 
   it('attributes fallback links using their reporting groups instead of array positions', async () => {
@@ -530,8 +528,7 @@ describe('Court Side dashboard', () => {
     fetchMock.mockImplementation((input, options) => String(input).includes('/api/briefings?') ? Promise.reject(new Error('History offline')) : defaults(input, options))
     render(<App />)
     await screen.findByRole('heading', { name: 'Saved NBA game report' })
-    await userEvent.click(screen.getByText('Recent briefings'))
-    expect(screen.getByText('Briefing history could not be loaded.')).toBeTruthy()
+    expect(screen.queryByText('Recent briefings')).toBeNull()
     expect(screen.queryByRole('alert')).toBeNull()
   })
 
@@ -567,10 +564,10 @@ describe('Court Side dashboard', () => {
     serve(latest)
     render(<App />)
     await screen.findByRole('heading', { name: 'Saved NBA game report' })
-    await userEvent.click(screen.getByText('Collection sources'))
-    expect(screen.getByText('GNews unavailable')).toBeTruthy()
-    expect(screen.getByText('ok · 12 articles')).toBeTruthy()
-    expect(screen.getByText('Recent feed snapshot only.')).toBeTruthy()
+    await userEvent.click(within(screen.getByRole('complementary', { name: 'Briefing context' })).getByText('Sources', { selector: 'summary' }))
+    expect(screen.getByText('0 articles · Unavailable')).toBeTruthy()
+    expect(screen.getByText('12 articles')).toBeTruthy()
+    expect(screen.queryByText('Recent feed snapshot only.')).toBeNull()
     expect(screen.getByText('Varies by source')).toBeTruthy()
   })
 

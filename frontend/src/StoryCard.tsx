@@ -8,11 +8,6 @@ import { sharedStoryUrl, storyKey } from './reading'
 import type { ReadingActions } from './reading'
 
 const eventLabels: Record<string, string> = { game: 'Game report', injury: 'Injury update', trade: 'Trade news', contract: 'Roster move', league: 'League news', off_court: 'Off-court news', milestone: 'Player milestone' }
-const activityLabels: Record<string, string> = {
-  search_articles: 'Looked for related reporting', retrieve_material: 'Read a saved source excerpt',
-  inspect_related_stories: 'Checked related story groups', compare_previous_briefings: 'Compared earlier briefings',
-  finish: 'Checked summary references', rejected_action: 'An action could not be used',
-}
 
 function SourceLink({ url, children }: { url: string; children: ReactNode }) {
   const href = safeLink(url)
@@ -97,7 +92,7 @@ export default function StoryCard({ story, briefing, mode, reader }: { story: St
         <p className="story-summary">{summary.text}</p>
         <div className="citation-links">{summary.citations.map(citation => <SourceLink key={citation.evidence_id} url={citation.url}>{citation.publisher}</SourceLink>)}</div>
       </> : <>
-        <p className="missing-summary">{story.investigation?.status === 'source_restricted' ? 'Headlines and source links only. A generated summary is unavailable for these sources.' : 'No evidence check has been saved for this briefing yet. Original reporting is linked below.'}</p>
+        <p className="missing-summary">{story.investigation?.status === 'source_restricted' ? 'Headlines and source links only. A generated summary is unavailable for these sources.' : 'No summary is available yet. Original reporting is linked below.'}</p>
         <div className="citation-links">{story.evidence_urls.map(url => <SourceLink key={url} url={url}>{sourceLabel(url)}</SourceLink>)}</div>
       </>}
       <div className="story-meta">
@@ -120,7 +115,7 @@ export default function StoryCard({ story, briefing, mode, reader }: { story: St
         {story.injury_updates && story.injury_updates.length > 0 && <details>
           <summary>Injury updates<Icon name="chevron" /></summary>
           <div className="details-body sources-list">
-            <p className="detail-note">Availability inferred from saved headlines and excerpts. Check the dates and original reports for the latest status.</p>
+            <p className="detail-note">Reported availability. See the original sources for updates.</p>
             {story.injury_updates.map(update => <div className="source-entry" key={update.url}>
               <p><strong>Reported {update.availability}</strong> · {formatDate(update.published_at, true)}</p>
               <SourceLink url={update.url}>{update.title}</SourceLink>
@@ -139,7 +134,6 @@ export default function StoryCard({ story, briefing, mode, reader }: { story: St
               <p>{component.explanation}</p>
             </div>)}
             {story.exclusion_reasons.length > 0 && <p className="detail-note">{story.exclusion_reasons.join('. ')}.</p>}
-            <p className="detail-note">These scores describe coverage in this collection. They do not measure all NBA news.</p>
           </div>
         </details>
 
@@ -147,7 +141,7 @@ export default function StoryCard({ story, briefing, mode, reader }: { story: St
           <summary>Sources <span className="detail-count">{story.evidence_urls.length}</span><Icon name="chevron" /></summary>
           <div className="details-body sources-list">
             {sourceState === 'loading' && <p role="status">Loading source details…</p>}
-            {sourceState === 'error' && <div><p>Could not load the saved source details.</p><button className="text-button" onClick={() => void loadSources()}>Try source details again</button></div>}
+            {sourceState === 'error' && <div><p>Sources could not be loaded.</p><button className="text-button" onClick={() => void loadSources()}>Try source details again</button></div>}
             <div aria-label="Reporting groups">{story.reporting_groups.map((group, index) => <div className="source-entry" key={index}>
               <p><strong>Reporting group {index + 1}</strong> · {group.publishers.join(' · ')}</p>
               {group.evidence_urls.map(url => {
@@ -161,17 +155,15 @@ export default function StoryCard({ story, briefing, mode, reader }: { story: St
                   </>}
                 </div>
               })}
-              {group.evidence_urls.length > 1 && <p className="detail-note">These links count together because they share a publisher or appear to carry the same report.</p>}
+              {group.evidence_urls.length > 1 && <p className="detail-note">These links count as one reporting group.</p>}
             </div>)}</div>
-            <p className="detail-note">Some publishers may carry the same report. Their links stay available, but likely copies count once.</p>
-            <p className="detail-note">Reporting groups are estimates. Original authorship and publisher ownership have not been verified.</p>
           </div>
         </details>
 
         {story.related_reading && story.related_reading.length > 0 && <details>
           <summary>Related reading <span className="detail-count">{story.related_reading.length}</span><Icon name="chevron" /></summary>
           <div className="details-body sources-list">
-            <p className="detail-note">Background, analysis, and reactions. These links do not count toward the score or independent confirmation of this story.</p>
+            <p className="detail-note">Background and analysis. Not included in the score.</p>
             {story.related_reading.map(article => <div className="source-entry" key={article.url}>
               <SourceLink url={article.url}>{article.title}</SourceLink>
               <p>{article.publisher} · Published {formatDate(article.published_at, true)}</p>
@@ -180,21 +172,7 @@ export default function StoryCard({ story, briefing, mode, reader }: { story: St
           </div>
         </details>}
 
-        <details>
-          <summary>Evidence check<Icon name="chevron" /></summary>
-          <div className="details-body">
-            {story.investigation ? <>
-              <p>{story.investigation.decision_summary}</p>
-              <span className="review-status">{story.investigation.provider === 'rules' ? 'Rules-based source check' : 'Source investigation'} · {story.investigation.status.replaceAll('_', ' ')}</span>
-              {story.investigation.activity.length > 0 && <ol className="activity-list">{story.investigation.activity.map((item, index) => <li key={index}>
-                <span>{activityLabels[item.tool] ?? item.decision}</span>
-                {typeof item.arguments?.query === 'string' && <small>Search: {item.arguments.query}</small>}
-                {item.status === 'rejected' && <small>This action was not accepted.</small>}
-              </li>)}</ol>}
-              {story.investigation.uncertainty?.map(note => <p className="detail-note" key={note}>{note}</p>)}
-            </> : <p>No investigation activity is saved for this briefing.</p>}
-          </div>
-        </details>
+
       </div>
       </>}
     </div>

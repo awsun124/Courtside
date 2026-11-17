@@ -48,8 +48,8 @@ export default function StatsPage() {
     <SiteHeader page="stats" />
     <div className="stats-surface"><main className="page-shell stats-page">
       <section className="page-intro"><div><p className="eyebrow intro-kicker">NBA / THE NUMBERS</p><h1>League stats<span>.</span></h1><p className="intro-copy">The league at a glance. Five leaderboards, one view.</p></div><div className="edition-mark"><span className="eyebrow">REGULAR SEASON</span><span className="edition-label">{data?.season ?? 'NBA'}</span><span>Updated with the daily collection.</span></div></section>
-      <div className="status-line"><span>Players: NBA.com · Teams: ESPN · Saved data</span><button className="text-button" disabled={loading} onClick={() => setReload(value => value + 1)}>Reload saved stats</button></div>
-      {loading && !data && <p role="status">Loading saved statistics…</p>}
+      <div className="status-line"><span>Players: NBA.com · Teams: ESPN</span><button className="text-button" disabled={loading} onClick={() => setReload(value => value + 1)}>Reload saved stats</button></div>
+      {loading && !data && <p role="status">Loading statistics…</p>}
       {error && <p className="notice error-notice" role="alert">{error} {data ? 'Showing the previous snapshot.' : ''}</p>}
       {data && <>
         <section className="stats-section" aria-labelledby="players-title">

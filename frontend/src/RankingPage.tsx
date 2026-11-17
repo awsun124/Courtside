@@ -10,7 +10,7 @@ export default function RankingPage() {
         <div>
           <p className="eyebrow intro-kicker"><span className="small-rule" /> THE METHOD</p>
           <h1 id="page-title">How we rank<span>.</span></h1>
-          <p className="intro-copy">A look at the reporting behind the order.<br />Court Side ranks the most-covered stories among the sources we monitor.</p>
+          <p className="intro-copy">The reporting behind the ranking.<br />Court Side ranks the most-covered stories among the sources we monitor.</p>
         </div>
       </section>
 
@@ -18,8 +18,8 @@ export default function RankingPage() {
         <p className="eyebrow">BEFORE THE SCORE</p>
         <h2 id="before-scoring">Find the event. Check the coverage.</h2>
         <ol className="ranking-steps">
-          <li><strong>Collect recent NBA reports.</strong><p>We use the selected one-, three-, or seven-day window. Source limits and delays mean we may only retrieve part of the coverage.</p></li>
-          <li><strong>Group articles about the same event.</strong><p>Sharing a player or team name is not enough. We compare the event, people, dates, and details such as teams, scores, or injury location. Ambiguous articles stay in review.</p></li>
+          <li><strong>Collect recent NBA reports.</strong><p>We collect NBA coverage for your selected date range.</p></li>
+          <li><strong>Group articles about the same event.</strong><p>We compare people, dates and event details to bring related reports together.</p></li>
           <li><strong>Combine likely copies.</strong><p>Reports from the same publisher and likely copies count as one reporting group. All original links remain available.</p></li>
         </ol>
       </section>
@@ -27,18 +27,18 @@ export default function RankingPage() {
       <section className="ranking-section" aria-labelledby="weighted-score">
         <p className="eyebrow">THE SCORE / 100</p>
         <h2 id="weighted-score">Three measures, one transparent score.</h2>
-        <p>These are the default settings. Settings can be changed, and each saved story’s “Why this ranks” panel shows the weights and values used for that briefing.</p>
+        <p>Each story’s “Why this ranks” panel shows its score breakdown.</p>
         <div className="ranking-components">
           <section><span className="ranking-weight">50<span>%</span></span><h3>Coverage</h3>
-            <p>How many estimated independent reporting groups cover the event. Eight groups earn all 50 coverage points. Two earn 12.5 points.</p>
+            <p>How many independent reporting groups cover the event. Eight groups earn the full 50 points.</p>
           </section>
           <section><span className="ranking-weight">30<span>%</span></span><h3>Momentum</h3>
-            <p>How quickly new reporting groups are joining. We compare groups per hour in the latest 24 hours of available coverage with the earlier part of the window.</p>
+            <p>How quickly coverage is growing compared with the earlier part of the selected period.</p>
             <p>Faster growth earns more points. Sparse coverage reduces them. Equal or falling rates earn zero.</p>
           </section>
           <section><span className="ranking-weight">20<span>%</span></span><h3>Freshness</h3>
-            <p>The age of the latest reviewed substantive development, backed by source links. It earns half the available points after 24 hours.</p>
-            <p>No reviewed development means zero freshness points. A newly published copy does not make an old event fresh.</p>
+            <p>How recently the story developed. Freshness points halve after 24 hours.</p>
+            <p>New copies of an old report do not earn freshness points.</p>
           </section>
         </div>
 
@@ -60,17 +60,17 @@ export default function RankingPage() {
       <section className="ranking-section" aria-labelledby="selection-rules">
         <p className="eyebrow">MAKING THE BRIEFING</p>
         <h2 id="selection-rules">Up to ten, when the evidence supports it.</h2>
-        <p>A story needs at least two estimated independent reporting groups under the default settings. We sort eligible stories by total score, then coverage, with a stable identifier breaking remaining ties.</p>
-        <p>We show fewer than ten when coverage is thin. Candidates below the minimum can appear under “On our radar,” with an explanation of what is missing.</p>
-        <p>Software calculates the numerical ranking. The optional AI investigator can inspect evidence and produce cited summaries, but it does not choose the scores. Rumors and uncertainty remain labeled.</p>
+        <p>Stories need at least two independent reporting groups to qualify. Higher scores rank first, with coverage breaking ties.</p>
+        <p>When fewer stories qualify, we show fewer than ten. Developing stories appear under “On our radar.”</p>
+        <p>Scores are calculated consistently. Summaries link to the reporting, and rumors remain labeled.</p>
       </section>
 
       <section className="ranking-section" aria-labelledby="ranking-limits">
-        <p className="eyebrow">READ THE LIMITS TOO</p>
+        <p className="eyebrow">SOURCE COVERAGE</p>
         <h2 id="ranking-limits">A view of our sources.</h2>
-        <p>API searches have request limits, feeds are recent snapshots, and some sources arrive late. GNews free access excludes the latest 12 hours. Momentum uses the available window, which may end before the time you refresh.</p>
-        <p>Event grouping and copy detection can make mistakes. A parsed injury availability change does not automatically qualify as a reviewed development or earn freshness points.</p>
-        <p>The briefing marks partial collection, failed sources, and stale data. The result is always the most-covered stories among our monitored sources.</p>
+        <p>Source coverage and update times vary. GNews free access excludes the latest 12 hours.</p>
+        <p>Related reports and likely copies are grouped automatically.</p>
+        <p>Unavailable sources and delayed updates are marked in the briefing.</p>
         <a className="secondary-button ranking-back" href={briefingLink()}>Back to the NBA briefing</a>
       </section>
       <footer className="site-footer"><div><strong>COURT SIDE.</strong><p>The reporting behind the order.</p></div><a href="https://github.com/awsun124/Courtside-Agent/blob/main/docs/ranking.md" target="_blank" rel="noopener noreferrer">Technical methodology</a></footer>

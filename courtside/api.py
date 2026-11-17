@@ -40,6 +40,7 @@ def create_app(database=None, env_file=None, settings_file=None, collector=None,
     automatic = scheduled if scheduled is not None else collector is None and clock is None and not external_schedule
     prediction_path = Path(predictions_folder or os.environ.get('COURTSIDE_PREDICTIONS_DIR') or
                            PROJECT_ROOT / 'artifacts/predictions/daily')
+    prediction_files=predictions_folder is not None or bool(os.environ.get('COURTSIDE_PREDICTIONS_DIR'))
 
     @asynccontextmanager
     async def lifespan(app):
@@ -87,8 +88,13 @@ def create_app(database=None, env_file=None, settings_file=None, collector=None,
         now = request.app.state.news.clock()
         selected = day or now.astimezone(EASTERN).date()
         try:
+            if not prediction_files:
+                from .predictions.repository import read_day,performance
+                result=read_day(request.app.state.news.database,selected.isoformat(),now)
+                result['performance']=performance(request.app.state.news.database,now)
+                return result
             return read_predictions(prediction_path, selected.isoformat(), now)
-        except (ValueError, KeyError, TypeError, OSError, AttributeError, OverflowError):
+        except (ValueError, KeyError, TypeError, OSError, AttributeError, OverflowError,sqlite3.Error):
             raise HTTPException(503, 'Saved predictions are unavailable. Try again later.') from None
 
     @app.get("/api/briefings/latest")

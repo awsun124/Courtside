@@ -1,0 +1,4 @@
+# Scheduled prediction worker only. The API stays on requirements.txt.
+-r requirements.txt
+scikit-learn==1.8.0
+pdfplumber==0.11.9

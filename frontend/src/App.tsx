@@ -12,7 +12,6 @@ import StatsPage from './StatsPage'
 import PredictionsPage from './PredictionsPage'
 import SharedStory from './SharedStory'
 import { useReading, storyKey } from './reading'
-import CollectionActivity from './CollectionActivity'
 import StoryFilters, { useStoryFilters } from './StoryFilters'
 
 export default function App() {
@@ -77,7 +76,7 @@ function Dashboard() {
         </div>
       </section>
 
-      <div className="status-line"><span><Icon name="clock" />{data?.status.last_successful_refresh ? <>Last refreshed <time dateTime={data.status.last_successful_refresh} title={formatDate(data.status.last_successful_refresh, true)}>{timeAgo(data.status.last_successful_refresh, state.now)}</time></> : 'No saved refresh yet'}</span>
+      <div className="status-line"><span><Icon name="clock" />{data?.status.last_successful_refresh ? <>Last refreshed <time dateTime={data.status.last_successful_refresh} title={formatDate(data.status.last_successful_refresh, true)}>{timeAgo(data.status.last_successful_refresh, state.now)}</time></> : 'No updates yet'}</span>
         <span>{automatic && schedule ? `Next scheduled update in ${Math.floor(nextUpdateMinutes / 60)}h ${nextUpdateMinutes % 60}m · 6 AM Eastern` : state.retrySeconds > 0 ? `Refresh available in ${state.retrySeconds < 60 ? `${state.retrySeconds}s` : `${Math.ceil(state.retrySeconds / 60)} min`}` : refreshing ? 'Reading coverage and checking evidence…' : 'Manual refresh only'}</span>
       </div>
       {state.error && <div className="notice error-notice" role="alert"><div><strong>Something didn’t load.</strong><p>{state.error}</p></div><button className="text-button" disabled={loading || refreshing} onClick={state.reload}>Reload saved briefing</button></div>}
@@ -103,17 +102,17 @@ function Dashboard() {
             <p className="filter-results">Saved editions keep their original dates, ranks, and scores. Up to 50 bookmarks are kept in this browser.</p>
             {bookmarks.length === 0 && <p className="empty-ranking">No bookmarks match this view. Bookmark a story or adjust your filters.</p>}
             {bookmarks.map(entry => <div key={`${entry.mode}-${entry.story.id}`}><p className="bookmark-edition">Saved edition · {formatDate(entry.briefing.as_of, true)}</p><StoryCard story={entry.story} briefing={entry.briefing} mode={entry.mode} reader={reader} /></div>)}
-          </> : loading && !briefing ? <div className="loading-state" role="status"><div className="loading-line" /><h3>Loading the saved briefing…</h3><p>Getting the stories and source details.</p></div>
+          </> : loading && !briefing ? <div className="loading-state" role="status"><div className="loading-line" /><h3>Loading the saved briefing…</h3><p>Getting the latest edition.</p></div>
             : !briefing ? <div className="empty-state"><span className="empty-number">00</span><h3>{state.error ? 'The briefing is unavailable.' : 'The first briefing starts here.'}</h3><p>{state.error ? 'Your saved news will appear when the API is available again.' : automatic ? 'News is collected daily at 6 AM Eastern while the server is running.' : 'Refresh to collect recent NBA coverage.'}</p>
                 {!state.error && !automatic && <button className="secondary-button" disabled={readOnly || refreshing || loading || state.retrySeconds > 0} onClick={() => void state.refresh()}>Collect the first briefing<Icon name="arrow" /></button>}
               </div>
               : <>
                 {filtered && stories.length === 0 && candidates.length === 0 && <div className="empty-ranking"><p>No saved stories match these filters. Some teams have no coverage in this edition. Clear search, team, story type, and unread filters to see all saved stories.</p><button className="text-button" onClick={() => { clearFilters(); setUnreadOnly(false) }}>Show all stories</button></div>}
-                {briefing.experimental && <div className="coverage-note"><span className="tag">Provisional</span><p>This collection is limited. Scores describe the reporting we have, and remain subject to review.</p></div>}
+                {briefing.experimental && <div className="coverage-note"><span className="tag">Provisional</span><p>Coverage is limited for this edition.</p></div>}
                 {briefing.stories.length === 0 && <div className="empty-ranking"><span className="empty-ranking-icon">0</span><div><h3>Not enough independent coverage yet.</h3><p>{candidates.length ? `${plural(candidates.length, 'candidate')} below still ${candidates.length === 1 ? 'needs' : 'need'} more reporting before entering the ranking.` : 'No stories in this collection meet the evidence minimum.'} We show fewer stories when the evidence is limited.</p></div></div>}
                 {filtered && stories.length === 0 && candidates.length > 0 && <p className="notice">{plural(candidates.length, 'matching story')} below {candidates.length === 1 ? 'is' : 'are'} unranked because independent coverage is limited.</p>}
                 {stories.map(story => <StoryCard key={`${mode}-${briefing.briefing_id}-${story.id}`} story={story} briefing={briefing} mode={mode} reader={reader} />)}
-                {candidates.length > 0 && <><div className="radar-heading"><p className="eyebrow">NOT RANKED YET</p><h2>On our radar</h2><p>Stories to follow, with provisional scores and less supporting coverage.</p></div>
+                {candidates.length > 0 && <><div className="radar-heading"><p className="eyebrow">NOT RANKED YET</p><h2>On our radar</h2><p>Developing stories with limited coverage.</p></div>
                   {candidates.map(story => <StoryCard key={`${mode}-${briefing.briefing_id}-${story.id}`} story={story} briefing={briefing} mode={mode} reader={reader} />)}</>}
               </>}
         </section>
@@ -122,32 +121,26 @@ function Dashboard() {
           <section className="edition-panel"><div className="aside-heading"><h2>This edition</h2><span className="source-dot" aria-hidden="true" /></div>
             <dl><div><dt>Source</dt><dd>{briefing?.source ?? 'Monitored sources'}</dd></div>
               <div><dt>Available coverage</dt><dd>{briefing ? `${formatDate(briefing.window_start)} – ${formatDate(briefing.window_end)}` : 'Not collected yet'}</dd></div>
-              <div><dt>Source delay</dt><dd>{briefing?.sources?.length ? 'Varies by source' : briefing?.warnings.some(note => note.includes('12 hours')) ? '12 hours' : briefing ? 'See coverage notes' : '12 hours on free access'}</dd></div>
+              <div><dt>Source delay</dt><dd>{briefing?.sources?.length ? 'Varies by source' : briefing?.warnings.some(note => note.includes('12 hours')) ? '12 hours' : briefing ? 'Varies by source' : '12 hours'}</dd></div>
               <div><dt>Publishers in view</dt><dd>{briefing ? publishers.size : '—'}</dd></div>
               <div><dt>Saved briefing</dt><dd>{briefing ? `#${String(briefing.briefing_id).padStart(3, '0')}` : 'Not available'}</dd></div>
             </dl>
-            <p className="aside-footnote">Several publisher links can carry the same report. Likely copies count once.</p>
+            <p className="aside-footnote">Repeated reports count once.</p>
           </section>
 
 
 
-          {briefing && <CollectionActivity briefing={briefing} />}
-          {!!briefing?.sources?.length && <details className="sidebar-details"><summary>Collection sources<Icon name="chevron" /></summary><div className="details-body">
+          {!!briefing?.sources?.length && <details className="sidebar-details"><summary>Sources<Icon name="chevron" /></summary><div className="details-body">
             <ul className="history-list">{briefing.sources.map(source => <li key={source.id}>
-              <strong>{source.name}</strong><p>{source.status.replaceAll('_', ' ')} · {plural(source.article_count, 'article')}</p>
-              {source.collected_at && <p>Last fetched {formatDate(source.collected_at, true)}</p>}
+              <strong>{source.name}</strong><p>{plural(source.article_count, 'article')}{source.status === 'failed' ? ' · Unavailable' : source.status === 'partial' ? ' · Limited coverage' : ''}</p>
+              {source.collected_at && <p>Updated {formatDate(source.collected_at, true)}</p>}
               {source.delay_hours ? <p>{source.delay_hours}-hour delay</p> : null}
-              {(source.error || source.note) && <p>{source.error || source.note}</p>}
-              {!!source.rejected_records && <p>{plural(source.rejected_records, 'item')} could not be used.</p>}
             </li>)}</ul>
           </div></details>}
-          {briefing && <details className="sidebar-details"><summary>Coverage notes<Icon name="chevron" /></summary><div className="details-body"><ul>{briefing.warnings.map(note => <li key={note}>{note}</li>)}</ul><p>Source dates and claims have not been independently verified.</p></div></details>}
-          <details className="sidebar-details"><summary>Recent briefings<Icon name="chevron" /></summary><div className="details-body">
-            {state.historyError ? <p>Briefing history could not be loaded.</p> : state.history.length === 0 ? <p>No briefings saved in this mode yet.</p> : <ul className="history-list">{state.history.map(item => <li key={item.briefing_id}><span>#{String(item.briefing_id).padStart(3, '0')}<time dateTime={item.as_of}>{formatDate(item.as_of, true)}</time></span><small>{plural(item.story_count, 'ranked story')} · {plural(item.candidate_count, 'candidate')}</small></li>)}</ul>}
-          </div></details>
+
         </aside>
       </div>
-      <footer className="site-footer"><div><strong>COURT SIDE.</strong><p>The most-covered stories among our monitored sources.</p></div><a href="https://github.com/awsun124/Courtside-Agent" target="_blank" rel="noopener noreferrer">About the project<Icon name="external" /></a></footer>
+      <footer className="site-footer"><div><strong>COURT SIDE.</strong><p>NBA news, in focus.</p></div><a href="https://github.com/awsun124/Courtside-Agent" target="_blank" rel="noopener noreferrer">About the project<Icon name="external" /></a></footer>
     </main>
   </div>
 }

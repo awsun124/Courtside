@@ -1,122 +1,80 @@
 # Predictions
 
-The independent margin-strength ensemble uses Elo, opponent-adjusted scoring
-margins, venue and rest. It achieved 375/501 correct winners (74.9%) on February
-1–April 12, 2026; Elo achieved 374/501. The probability-score improvement is
-small and statistically uncertain. No bookmaker odds enter this model.
+## Model
 
-[Model, evaluation and reproduction](../courtside/predictions/IMPROVED_MODEL.md)
+The model combines Elo, opponent-adjusted scoring margins, venue and rest with a
+validation-selected adjustment for confirmed player absences. In a retrospective
+February 1–April 12, 2026 evaluation, it picked 375/501 winners (74.9%), with a
+0.17856 Brier score. The original model scored 0.17951. The injury weight (0.25)
+was chosen on January validation. [Research details](../courtside/predictions/IMPROVED_MODEL.md).
 
-## Local inference
+The production model uses data-only linear coefficients and 4,920 historical
+regular-season results under `courtside/predictions/assets/`. It reproduces the
+original checkpoint to numerical precision and needs no local pickle files.
+Only the scheduled worker installs `requirements-predictions.txt`. The API reads
+stored observations and requires no ML dependencies.
 
-Install optional research dependencies with
-`.venv/bin/pip install -r requirements-ml.txt`. Run commands from the repository root.
+## Production workflow
+
+`NBA predictions` runs in GitHub Actions at 6 AM Eastern and hourly from noon
+through 11 PM Eastern. It also supports manual dispatch. GitHub can delay cron
+runs. Configure `DATABASE_URL` and optional `ODDS_API_KEY` as repository secrets.
+The job:
+
+1. Collects final ESPN results and settles previously recorded predictions.
+2. Refreshes upcoming schedules and generates independent model forecasts.
+3. Checks official NBA injury reports and recent player box scores.
+4. Attaches bookmaker prices when available, with a six-hour odds cache and a
+   durable 124-attempt monthly cap. Page loads never spend odds credits.
+5. Saves immutable observations in PostgreSQL. The latest valid forecast before
+   the one-hour cutoff becomes the displayed and graded prediction.
+
+Results, forecast revisions, result-coverage state and odds usage survive worker
+and API restarts. A database lease plus workflow concurrency prevents overlapping
+collection. Provider caches in GitHub Actions reduce repeated public requests.
+Injury reports marked not yet submitted or missing player data remain explicit.
+Questionable players are not assumed out. Existing long-term absences receive a
+smaller or zero additional penalty. Confirmed starting lineups are not included.
+
+Apply the additive schema using the existing direct-URL migration command before
+the first worker run. Test migrations on a Neon branch first. The worker uses the
+pooled database connection and does not perform PostgreSQL schema changes.
 
 ```sh
-.venv/bin/python -m courtside.predictions.forecast_strength --help
+python -m scripts.migrate_database --env-file .env
+pip install -r requirements-predictions.txt
+python -m courtside.predictions.production
 ```
 
-The command loads the frozen local checkpoint and complete historical results,
-requires a current result collection under six hours old, and writes a new
-forecast file. Results become usable 24 hours after scheduled start. Forecasts
-require five current-season results per team, recent team data, and generation
-at least one hour before tipoff. Inputs contain no verified injuries or lineups.
+## API and page
 
-Generate current independent-model editions with:
+`GET /api/predictions?date=YYYY-MM-DD` reads PostgreSQL by default (SQLite locally).
+The date is Eastern. The response includes recorded pregame forecasts, official
+injury notes, optional bookmaker prices, final scores and live performance.
+Missing market prices hide comparison columns. Key absences appear on cards;
+full player availability is expandable.
 
-```sh
-.venv/bin/python -m courtside.predictions.daily_strength
-```
+The live record includes only real recorded forecasts with settled game results
+from the last year, using one forecast per game. Research evaluation games are
+not imported into that record. Pending games do not count in its accuracy.
+Monthly accuracy appears once results exist. Final score corrections can update
+settlement without changing the saved prediction.
 
-This collects public results/schedules and saves today/tomorrow forecasts in
-`courtside/artifacts/predictions/availability-daily/`. Set
-`COURTSIDE_PREDICTIONS_DIR` to that directory when starting the API to serve the
-independent editions. Optional `--odds-folder` attaches saved market comparisons
-without requesting odds. The page displays the model methodology and its scoped
-historical evaluation. Older snapshots retain their original model identity.
-Deployment and automated scheduling remain separate steps.
+For legacy file-based previews, explicitly set `COURTSIDE_PREDICTIONS_DIR` or pass
+`predictions_folder` to `create_app`. This mode keeps the existing first-forecast
+file-reader behavior and does not include database live-performance data.
+Production should leave that override unset.
 
-## Saved odds and forecasts
-
-`ODDS_API_KEY` configures The Odds API live collector; `ODDSPAPI_API_KEY` configures
-the separate historical research source. Keep keys in the ignored root `.env`.
-The live collector has a six-hour cache and a local monthly attempt cap.
+## Tests
 
 ```sh
-.venv/bin/python scripts/collect_prediction_odds.py --help
-.venv/bin/python -m courtside.predictions.odds_matching --help
-.venv/bin/python -m courtside.predictions.daily --help
-```
-
-Pass `--matches REPORT.json --forecasts FORECASTS.json` to `daily`. It writes
-immutable timestamped snapshots under `artifacts/predictions/daily/YYYY-MM-DD/`.
-Missing or late forecasts remain unavailable. Each bookmaker is normalized
-separately to remove its two-sided margin. Model-minus-market differences are
-absolute probability differences, displayed with a % sign, not expected returns.
-
-`GET /api/predictions?date=YYYY-MM-DD` reads these snapshots for `/predictions`.
-Dates use America/New_York. Missing snapshots return an empty result; invalid
-dates return 422 and corrupt snapshots return 503. Reads never collect data or
-spend credits. The first available forecast for each game is retained with its
-paired prices; timestamps and stale states remain visible.
-
-Set `COURTSIDE_PREDICTIONS_DIR` to override the snapshot folder. Artifacts are
-ignored by Git; source deployment does not transfer checkpoints or snapshots.
-Production persistence and prediction scheduling still need implementation.
-
-## Verification
-
-```sh
-.venv/bin/python -m unittest courtside.predictions.test_strength
 .venv/bin/python -m unittest discover -s courtside/predictions -t .
+npm --prefix frontend test
+npm --prefix frontend run build
 ```
 
-Historical market comparisons remain local evaluation evidence. The hybrid
-experiment selected zero independent-model weight and was abandoned. Its source
-was removed; it is not the deployed or independent forecasting model.
-
-## Player availability
-
-The daily producer now checks timestamped official NBA injury-report PDFs and
-collects the last ten available player box scores for the relevant teams.
-`--base-only` disables this experimental correction. Only confirmed Out players
-change probabilities. Questionable/Doubtful statuses are displayed as uncertain.
-Missing reports or box scores leave the base forecast intact with an explicit
-availability note. Reports marked not yet submitted are never treated as healthy.
-
-The adjustment estimates box-score contribution above a lower-minute replacement
-rotation, weighted by actual minutes across the last five team games. Absences
-already present in recent form therefore receive diminishing or zero additional
-penalty. Each player is capped at four estimated margin points, each team at six.
-A fixed 0.10 log-odds shift per margin point converts that difference into a
-probability change. These are conservative heuristic constants, not fitted or
-validated player-impact estimates. No PPG subtraction or PER claim is made.
-
-January validation selected an injury weight of 0.25 from eight candidates by
-winner accuracy, then log loss. On the same 501 February–April games, the weighted
-injury model scored 375/501 (74.9%), Brier 0.17856 and log loss 0.53826, compared
-with base Brier 0.17951 and log loss 0.54057. There were 327 nonzero adjustments,
-79 reviewed/no-change forecasts and 95 without usable availability. All 501 games
-remain included. Four winner picks changed, with no net accuracy change.
-
-This is a retrospective comparison on a previously inspected test period, not a
-new untouched holdout. The paired Brier-difference interval was [-0.00143,
--0.00045]. The prespecified original unweighted adjustment scored 381/501
-(76.0%), Brier 0.17651. It is secondary evidence and did not replace the
-validation-selected weight after observing test results.
-
-The prediction job loads the frozen weight from the local injury-evaluation
-selection artifact and verifies its inputs. The study module supports initialize,
-repair-player-coverage, collect-validation, select, collect-test and test phases.
-Official report collection is bounded to eight preceding quarter-hour reports.
-The player archive reconciled for 1,223 of 1,230 games after excluding 33
-anonymous zero-stat placeholders. Seven inconsistent games also failed direct
-source reconciliation, so affected team corrections were withheld.
-
-Local artifacts and the full report are in
-`courtside/artifacts/predictions/injury-evaluation/`. Original evaluation files
-and checkpoints remain unchanged.
-Confirmed starting lineups and automatic daily scheduling remain future work.
-Official player names match exactly after normalization within a team, never by
-fuzzy last-name matching. Unmatched names and partial coverage remain recorded.
-Sources and checksums are cached under the job's availability directory.
+Tests cover immutable revisions, on-time selection, late-update rejection,
+settlement, repeat-run idempotency, concurrent-job leases, missing market data,
+player-availability disclosures and live-versus-historical result separation.
+Secrets remain in the server environment or encrypted Actions secrets. Never put
+provider or database credentials in browser variables or committed assets.

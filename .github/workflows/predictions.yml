@@ -1,0 +1,43 @@
+name: NBA predictions
+
+on:
+  schedule:
+    - cron: '0 6 * * *'
+      timezone: America/New_York
+    - cron: '0 12-23 * * *'
+      timezone: America/New_York
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: nba-predictions
+  cancel-in-progress: false
+
+jobs:
+  predict:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
+      ENABLE_LLM_CALLS: 'false'
+      ENABLE_SAMPLE_AI: 'false'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: requirements-predictions.txt
+      - uses: actions/cache@v4
+        with:
+          path: artifacts/prediction-job-cache
+          key: nba-predictions-${{ runner.os }}-${{ github.run_id }}
+          restore-keys: nba-predictions-${{ runner.os }}-
+      - run: pip install -r requirements-predictions.txt
+      - name: Validate database configuration
+        run: python -c "import os; assert os.environ.get('DATABASE_URL', '').startswith(('postgres://', 'postgresql://')), 'Set the DATABASE_URL repository secret'"
+      - name: Refresh predictions, injuries and game results
+        run: python -m courtside.predictions.production

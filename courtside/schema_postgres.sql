@@ -86,3 +86,32 @@ CREATE TABLE IF NOT EXISTS stats_collections (
     scheduled_at TEXT PRIMARY KEY,
     season TEXT NOT NULL
 );
+
+
+CREATE TABLE IF NOT EXISTS prediction_observations (
+ observation_id TEXT PRIMARY KEY,
+ game_id TEXT NOT NULL,
+ game_date TEXT NOT NULL,
+ saved_at TEXT NOT NULL,
+ scheduled_start TEXT NOT NULL,
+ cutoff_at TEXT NOT NULL,
+ model_version TEXT,
+ payload TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS prediction_observations_date ON prediction_observations(game_date, game_id, saved_at);
+CREATE TABLE IF NOT EXISTS prediction_outcomes (
+ game_id TEXT PRIMARY KEY,
+ game_date TEXT NOT NULL,
+ scheduled_start TEXT NOT NULL,
+ recorded_at TEXT NOT NULL,
+ payload TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS prediction_collection_state (
+ state_key TEXT PRIMARY KEY,
+ updated_at TEXT NOT NULL,
+ payload TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS prediction_job_leases (
+ job_key TEXT PRIMARY KEY,
+ lease_until TEXT NOT NULL
+);
