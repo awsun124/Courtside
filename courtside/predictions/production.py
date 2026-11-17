@@ -69,6 +69,7 @@ def restore_odds(database,folder):
     for relative,payload in state.items():
         path=Path(relative)
         if path.is_absolute() or '..' in path.parts or path.suffix!='.json':raise ValueError('Unsafe saved odds cache path')
+        (folder/path).parent.mkdir(parents=True,exist_ok=True)
         atomic_json(folder/path,payload)
 
 

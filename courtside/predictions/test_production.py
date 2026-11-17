@@ -4,7 +4,7 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
-from .production import update_results
+from .production import update_results,restore_odds
 from .repository import migrate,load_outcomes,put_state
 
 NOW=datetime(2026,11,16,23,tzinfo=timezone.utc)
@@ -33,6 +33,13 @@ class ProductionResultTests(unittest.TestCase):
             results=update_results(self.db,NOW)
         self.assertEqual([r['game_id'] for r in results],['espn:100'])
         self.assertTrue(results[0]['home_win'])
+
+    def test_odds_cache_restores_on_a_fresh_worker(self):
+        import json
+        put_state(self.db,'prediction-odds-cache',{'snapshots/example.json':{'games':[]}},NOW)
+        folder=Path(self.folder.name)/'new-worker'/'odds'
+        restore_odds(self.db,folder)
+        self.assertEqual(json.loads((folder/'snapshots/example.json').read_text()),{'games':[]})
 
     def test_incomplete_older_result_stops_new_forecasts(self):
         def invalid(day):
