@@ -47,3 +47,23 @@ class ProductionResultTests(unittest.TestCase):
         with patch('courtside.predictions.production.get_scoreboard',side_effect=invalid):
             with self.assertRaises(ValueError):update_results(self.db,NOW)
         self.assertEqual(load_outcomes(self.db),[])
+
+    def test_late_game_across_midnight_stays_pending_then_settles(self):
+        now=datetime(2026,11,17,6,55,tzinfo=timezone.utc)
+        late=event('103','2026-11-16',False)
+        late['date']=late['competitions'][0]['date']='2026-11-17T04:00:00Z'
+        def scoreboard(day):
+            return dict(events=[late] if day.isoformat()=='2026-11-16' else []),{}
+        with patch('courtside.predictions.production.get_scoreboard',side_effect=scoreboard):
+            self.assertEqual(update_results(self.db,now),[])
+            late['competitions'][0]['status']['type']=dict(completed=True,name='STATUS_FINAL')
+            results=update_results(self.db,now+timedelta(hours=4))
+        self.assertEqual([r['game_id'] for r in results],['espn:103'])
+
+    def test_unresolved_game_at_24_hour_boundary_still_blocks(self):
+        now=datetime(2026,11,17,19,tzinfo=timezone.utc)
+        def scoreboard(day):
+            return dict(events=[event('104','2026-11-16',False)] if day.isoformat()=='2026-11-16' else []),{}
+        with patch('courtside.predictions.production.get_scoreboard',side_effect=scoreboard):
+            with self.assertRaisesRegex(ValueError,'Unresolved historical game'):
+                update_results(self.db,now)

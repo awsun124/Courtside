@@ -52,6 +52,12 @@ def update_results(database,now):
                 'championship' in notes and any(w in notes for w in ('cup','in-season tournament'))):continue
             if not status.get('completed'):
                 if day==today:continue
+                start_time=timestamp(competition['date'])
+                if start_time.astimezone(EASTERN).date()!=day:
+                    raise ValueError('Result date differs from requested date')
+                # Late games can finish after Eastern midnight. Their results
+                # are not eligible model inputs until 24 hours after tipoff.
+                if now < start_time+timedelta(hours=24):continue
                 raise ValueError('Unresolved historical game; preserve prior forecasts')
             result=parse_result(dict(header=event),event['id'])
             if timestamp(result['scheduled_start']).astimezone(EASTERN).date()!=day:
