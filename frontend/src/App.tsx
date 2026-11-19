@@ -1,4 +1,5 @@
 import LoadingDots from './LoadingDots'
+import { usePageMotion } from './usePageMotion'
 import { useEffect, useState } from 'react'
 import { flushSync } from 'react-dom'
 import { Analytics } from '@vercel/analytics/react'
@@ -18,6 +19,7 @@ import StoryFilters, { useStoryFilters } from './StoryFilters'
 
 export default function App() {
   const [location, setLocation] = useState(() => window.location.href)
+  usePageMotion(location)
   useEffect(() => {
     function renderLocation() {
       const update = () => flushSync(() => setLocation(window.location.href))

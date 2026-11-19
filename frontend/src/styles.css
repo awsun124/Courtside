@@ -462,7 +462,7 @@ button, a, select, summary, input {
   transition: color 140ms ease, background-color 140ms ease, border-color 140ms ease, box-shadow 140ms ease;
 }
 details > summary > .icon:last-child { transition: transform 180ms ease; }
-.story-card, .prediction-card { animation: content-in 180ms ease-out; }
+
 .team-picker[open] fieldset { animation: content-in 150ms ease-out; }
 .prediction-bar > span { transition: width 200ms ease; }
 
@@ -499,4 +499,27 @@ details > summary > .icon:last-child { transition: transform 180ms ease; }
   .stats-page .conference-card .stats-table { min-width: 540px; }
   .stats-page .page-intro { padding-block: 28px 20px; }
   .prediction-grid, .news-column { min-width: 0; }
+}
+
+/* A quiet editorial entrance, followed by one-time reveals as you read. */
+@media (prefers-reduced-motion: no-preference) {
+  .page-intro h1 { animation: title-arrive 650ms cubic-bezier(.22, 1, .36, 1) both; }
+  .page-intro .intro-kicker { animation: section-arrive 450ms ease-out both; }
+  .page-intro .intro-copy { animation: section-arrive 550ms 100ms cubic-bezier(.22, 1, .36, 1) both; }
+  .page-intro .edition-mark { animation: section-arrive 550ms 170ms cubic-bezier(.22, 1, .36, 1) both; }
+  .toolbar, .prediction-view-controls { animation: section-arrive 500ms 150ms cubic-bezier(.22, 1, .36, 1) both; }
+  [data-reveal="waiting"] { opacity: 0; transform: translateY(18px); }
+  [data-reveal="visible"] { animation: section-arrive 600ms var(--reveal-delay, 0ms) cubic-bezier(.22, 1, .36, 1) both; }
+  .story-card, .prediction-card, .leaderboard-card { transition: border-color 180ms ease, box-shadow 180ms ease; }
+  .story-card:hover, .prediction-card:hover, .leaderboard-card:hover { border-color: #b9bcaf; box-shadow: 0 5px 18px #242a2709; }
+  .brand > svg { transition: transform 300ms cubic-bezier(.22, 1, .36, 1); }
+  .brand:hover > svg { transform: rotate(-9deg); }
+}
+@keyframes title-arrive {
+  from { opacity: 0; transform: translateY(18px); clip-path: inset(0 0 90% 0); }
+  to { opacity: 1; transform: translateY(0); clip-path: inset(0 0 0 0); }
+}
+@keyframes section-arrive {
+  from { opacity: 0; transform: translateY(18px); }
+  to { opacity: 1; transform: translateY(0); }
 }
