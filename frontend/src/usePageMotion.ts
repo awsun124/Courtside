@@ -5,7 +5,7 @@ export function usePageMotion(location: string) {
     if (!window.matchMedia || !('IntersectionObserver' in window)) return
     const preference = window.matchMedia('(prefers-reduced-motion: reduce)')
     if (preference.matches) return
-    const selector = '.story-card, .prediction-card, .leaderboard-card, .conference-card, .ranking-section, .prediction-research, .prediction-live, .section-heading'
+    const selector = '.story-card, .prediction-card, .leaderboard-card, .conference-card, .ranking-section, .prediction-research, .section-heading'
     const elements = new Set<HTMLElement>()
     const observer = new IntersectionObserver(entries => {
       for (const entry of entries) {

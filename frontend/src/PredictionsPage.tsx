@@ -85,11 +85,18 @@ export default function PredictionsPage() {
   const [error, setError] = useState('')
   const [reload, setReload] = useState(0)
   const [view, setView] = useState<'matchups' | 'results'>('matchups')
-  function shiftDay(amount: number) {
-    const next = new Date(`${day}T12:00:00Z`)
+  const today = easternDate()
+  function offsetDate(value: string, amount: number) {
+    const next = new Date(`${value}T12:00:00Z`)
     next.setUTCDate(next.getUTCDate() + amount)
-    setDay(next.toISOString().slice(0, 10))
+    return next.toISOString().slice(0, 10)
   }
+  const earliestDay = offsetDate(today, -7)
+  const latestDay = view === 'results' ? offsetDate(today, -1) : undefined
+  function selectDay(value: string) {
+    if (/^\d{4}-\d{2}-\d{2}$/.test(value) && value >= earliestDay && (!latestDay || value <= latestDay)) setDay(value)
+  }
+  function shiftDay(amount: number) { selectDay(offsetDate(day, amount)) }
   useEffect(() => {
     if (!day) return
     const controller = new AbortController()
@@ -110,12 +117,8 @@ export default function PredictionsPage() {
         <p className="prediction-research-context">Our model predicted 375 of 501 game winners correctly, using team performance, player availability and official pregame injury reports. Settings were chosen using earlier games. In this historical comparison, Elo reached 74.7% accuracy and a 0.1827 Brier score.</p>
         <details className="prediction-research-details"><summary>How the model works</summary><div className="prediction-model-steps"><div><span className="eyebrow">01 / MEASURE</span><h3>Team strength</h3><p>Elo tracks wins and losses. Scoring margins and opponent-adjusted ratings measure how convincingly teams perform and who they face.</p></div><div><span className="eyebrow">02 / ADJUST</span><h3>Game context</h3><p>Home court, rest and back-to-backs help estimate the scoring margin. Recent results and longer-term strength provide different views.</p></div><div><span className="eyebrow">03 / COMBINE</span><h3>A win probability</h3><p>The model combines three estimates based on past results to predict each team’s chance of winning. Bookmaker odds are comparison data, never model inputs.</p></div></div><p>Model settings were selected using earlier games. Team ratings update with a 24-hour result delay. Official injury reports and recent player contributions adjust for confirmed absences, with smaller adjustments for long-term absences. Starting lineups are not included.</p></details>
       </section>
-      <section className="prediction-live" aria-labelledby="live-record"><div><p className="eyebrow">RECORDED BEFORE TIPOFF</p><h2 id="live-record">The live record.</h2></div>
-        {data?.performance?.games ? <><div className="prediction-live-score"><strong>{percent(data.performance.accuracy)}</strong><span>{data.performance.correct} of {data.performance.games} correct winners</span></div><p>Recorded predictions matched with final game results. Each game uses the latest forecast saved at least one hour before tipoff. Historical research games are excluded.</p><details><summary>Monthly results</summary><ul>{data.performance.months.map(month => <li key={month.month}>{month.month} · {month.correct}/{month.games} correct · {percent(month.accuracy)}</li>)}</ul></details></> : <p>Results appear here as games finish. Only predictions recorded before tipoff count toward this record.</p>}
-        {!!data?.performance?.pending_games && <p>{data.performance.pending_games} predictions awaiting final results.</p>}
-      </section>
-      <div className="prediction-view-controls" aria-label="Prediction view"><button aria-pressed={view === 'matchups'} onClick={() => { setView('matchups'); setDay(easternDate()) }}>Upcoming matchups</button><button aria-pressed={view === 'results'} onClick={() => { setView('results'); if (day >= easternDate()) { const yesterday = new Date(`${easternDate()}T12:00:00Z`); yesterday.setUTCDate(yesterday.getUTCDate() - 1); setDay(yesterday.toISOString().slice(0, 10)) } }}>Past results</button></div>
-      <div className="toolbar prediction-toolbar"><div className="prediction-date-controls"><button className="text-button" aria-label="Previous game date" onClick={() => shiftDay(-1)}>←</button><label htmlFor="prediction-date">Game date <span>(Eastern)</span><input id="prediction-date" type="date" value={day} onChange={event => { if (event.target.value) setDay(event.target.value) }} /></label><button className="text-button" aria-label="Next game date" onClick={() => shiftDay(1)}>→</button></div>
+      <div className="prediction-view-controls" aria-label="Prediction view"><button aria-pressed={view === 'matchups'} onClick={() => { setView('matchups'); setDay(easternDate()) }}>Upcoming matchups</button><button aria-pressed={view === 'results'} onClick={() => { setView('results'); if (day >= today || day < earliestDay) setDay(offsetDate(today, -1)) }}>Past results</button></div>
+      <div className="toolbar prediction-toolbar"><div className="prediction-date-controls"><button className="text-button" aria-label="Previous game date" disabled={day <= earliestDay} onClick={() => shiftDay(-1)}>←</button><label htmlFor="prediction-date">Game date <span>(Eastern)</span><input id="prediction-date" type="date" min={earliestDay} max={latestDay} value={day} onChange={event => selectDay(event.target.value)} /></label><button className="text-button" aria-label="Next game date" disabled={!!latestDay && day >= latestDay} onClick={() => shiftDay(1)}>→</button></div>
         <button className="refresh-button" disabled={loading} onClick={() => setReload(value => value + 1)}>Reload saved results</button></div>
       {loading ? <p className="prediction-loading" role="status"><LoadingDots />Loading saved predictions…</p> : error ? <div className="notice" role="alert">{error}</div> : data?.status === 'no_snapshot' ? <section className="prediction-empty"><p className="eyebrow">NO SAVED EDITION</p><h2>No predictions saved for this date.</h2><p>Try another game date.</p></section> : <>
         <div className="prediction-edition" role="status"><span>{data?.games.length ?? 0} matchups · {forecasts} model forecasts</span><span>{data?.saved_at ? `Updated ${time(data.saved_at)}` : ''}</span></div>

@@ -108,17 +108,18 @@ it('hides market comparison columns when no bookmaker prices exist', async () =>
   expect(screen.queryByRole('columnheader', { name: 'Difference' })).toBeNull()
 })
 
-it('shows recorded live accuracy and settled results separately from historical research', async () => {
+it('keeps live accuracy off the page while retaining settled matchup results', async () => {
   const saved = data()
   Object.assign(saved, { performance: { games: 10, correct: 7, accuracy: 0.7, pending_games: 2,
     first_date: '2026-11-01', last_date: '2026-11-14', months: [{ month: '2026-11', games: 10, correct: 7, accuracy: 0.7 }] } })
   Object.assign(saved.games[0], { result: { home_points: 110, away_points: 100, correct: true } })
   vi.mocked(fetch).mockResolvedValue(new Response(JSON.stringify(saved), { status: 200 }))
   render(<PredictionsPage />)
-  await screen.findByText('7 of 10 correct winners')
-  expect(screen.getByText('Correct winner')).toBeTruthy()
-  expect(screen.getByText(/2 predictions awaiting final results/)).toBeTruthy()
-  expect(screen.getByText(/Historical research games are excluded/)).toBeTruthy()
+  await screen.findByText('Correct winner')
+  expect(screen.queryByText('70.0%')).toBeNull()
+  expect(screen.queryByText('7 of 10 correct winners')).toBeNull()
+  expect(screen.queryByText('The live record.')).toBeNull()
+  expect(screen.queryByText('Monthly results')).toBeNull()
 })
 
 it('browses recorded results without mixing pending or unavailable picks into wins', async () => {
@@ -141,4 +142,25 @@ it('browses recorded results without mixing pending or unavailable picks into wi
   fireEvent.click(screen.getByRole('button', { name: 'Previous game date' }))
   await screen.findByRole('region', { name: 'Prediction results' })
   expect(vi.mocked(fetch).mock.calls.at(-1)?.[0]).toBe('/api/predictions?date=2026-11-15')
+})
+
+it('limits public date browsing to the previous seven days without deleting history', async () => {
+  vi.mocked(fetch).mockImplementation(async () => new Response(JSON.stringify(data()), { status: 200 }))
+  render(<PredictionsPage />)
+  await screen.findByRole('region', { name: 'Matchup predictions' })
+  fireEvent.click(screen.getByRole('button', { name: 'Past results' }))
+  await screen.findByRole('region', { name: 'Prediction results' })
+  const input = screen.getByLabelText(/Game date/) as HTMLInputElement
+  const earliest = input.min
+  const earlier = new Date(`${earliest}T12:00:00Z`)
+  earlier.setUTCDate(earlier.getUTCDate() - 1)
+  const calls = vi.mocked(fetch).mock.calls.length
+  fireEvent.change(input, { target: { value: earlier.toISOString().slice(0, 10) } })
+  expect(vi.mocked(fetch).mock.calls.length).toBe(calls)
+  fireEvent.change(input, { target: { value: earliest } })
+  await screen.findByRole('region', { name: 'Prediction results' })
+  expect((screen.getByRole('button', { name: 'Previous game date' }) as HTMLButtonElement).disabled).toBe(true)
+  fireEvent.change(input, { target: { value: input.max } })
+  await screen.findByRole('region', { name: 'Prediction results' })
+  expect((screen.getByRole('button', { name: 'Next game date' }) as HTMLButtonElement).disabled).toBe(true)
 })
