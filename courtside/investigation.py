@@ -88,50 +88,79 @@ def publication_time(value):
         return None
 
 
-def availability_disagreements(retrieved, allowed_ids):
-    """Find explicit differences in reports about a player’s availability.
+def availability_game_date(claim, published):
+    """Resolve an explicit date or an unambiguous publication-relative day."""
+    days = set()
+    for value in re.findall(r'\b20\d{2}-\d{2}-\d{2}\b', claim):
+        try: days.add(datetime.fromisoformat(value).date())
+        except ValueError: return None
+    months = ('january february march april may june july august september october november december').split()
+    names = {name: index+1 for index,name in enumerate(months)}
+    names.update({name[:3]: index+1 for index,name in enumerate(months)})
+    pattern = r'\b('+'|'.join(sorted(names,key=len,reverse=True))+r')\.?\s+(\d{1,2})(?:st|nd|rd|th)?(?:,?\s+(20\d{2}))?\b'
+    for month, day, year in re.findall(pattern, claim.lower()):
+        if not year and published is None: return None
+        years = [int(year)] if year else [published.year-1,published.year,published.year+1]
+        candidates = []
+        for candidate_year in years:
+            try: candidates.append(datetime(candidate_year,names[month],int(day)).date())
+            except ValueError: continue
+        if not candidates: return None
+        days.add(min(candidates,key=lambda date:abs((date-published.date()).days)) if not year else candidates[0])
+    for relative in re.findall(r'\b(tonight|today|tomorrow)\b',claim.lower()):
+        if published is None: return None
+        days.add(published.date()+timedelta(days=int(relative=='tomorrow')))
+    return next(iter(days)) if len(days)==1 else None
 
-    Compare full player names and game dates based on when each report was published.
-    If a name, date or status is missing, leave the report unassessed.
-    """
+
+def availability_assessment(retrieved, allowed_ids, reporting_groups=()):
+    """Compare explicit statuses; only a later same-group correction supersedes a report."""
     claims = {}
+    group_of = {evidence_id(url):index for index,group in enumerate(reporting_groups) for url in group['evidence_urls']}
     pattern = re.compile(r"(?P<name>[A-Z][\w’'-]+(?:\s+[A-Z][\w’'-]+){1,3})\s+"
-                         r"(?:is|was|remains|will|would|has been)\s+(?P<claim>[^.!?]+)")
+                         r"(?:is|was|remains|will|would|has been)\s+(?P<claim>[^!?]+?)(?=(?<!Jan)(?<!Feb)(?<!Mar)(?<!Apr)(?<!Jun)(?<!Jul)(?<!Aug)(?<!Sep)(?<!Oct)(?<!Nov)(?<!Dec)\.\s|\.$|$)")
     for evidence, material in retrieved.items():
-        if evidence not in allowed_ids or material.get('quarantined'):
-            continue
+        if evidence not in allowed_ids or material.get('quarantined'): continue
         published = publication_time(material.get('published_at'))
-        if published is None:
-            continue
-        day = published.astimezone(ZoneInfo('America/New_York')).date()
-        # Use the fullest single saved field to avoid duplicate title/excerpt claims.
+        published = published.astimezone(ZoneInfo('America/New_York')) if published else None
         texts = material.get('material', {})
         text = texts.get('excerpt') or texts.get('description') or texts.get('title') or ''
+        correction = bool(re.search(r'\bcorrection to our earlier report\b|\bwe (?:correct|withdraw|retract) our earlier report\b',text,re.I))
         for match in pattern.finditer(text):
             claim = match['claim'].lower()
-            scope = re.search(r'\b(tonight|today|tomorrow)\b', claim)
-            if not scope:
-                continue
-            game_day = day + timedelta(days=int(scope[1] == 'tomorrow'))
-            if re.match(r"(?:not (?:ruled out|out)|questionable|doubtful|(?:a )?game[- ]time decision)\b", claim):
-                status = 'uncertain'
-            elif re.match(r"(?:out|ruled out|miss)\b", claim):
-                status = 'out'
-            elif re.match(r"(?:available|cleared to play|play)\b", claim):
-                status = 'available'
-            else:
-                continue
-            key = (match['name'].casefold(), game_day.isoformat())
-            entries = claims.setdefault(key, [])
-            entry = dict(player=match['name'], evidence_id=evidence, status=status)
-            if entry not in entries:
-                entries.append(entry)
-    disagreements = []
-    for (_, day), entries in claims.items():
-        if any(a['evidence_id'] != b['evidence_id'] and a['status'] != b['status'] for a in entries for b in entries):
-            disagreements.append(dict(kind='player_availability', player=entries[0]['player'], game_date=day,
-                                      claims=entries, resolution='unresolved'))
-    return disagreements
+            game_day = availability_game_date(claim,published)
+            if game_day is None: continue
+            if re.match(r"(?:not (?:ruled out|out)|(?:not )?expected to play|questionable|doubtful|(?:a )?game[- ]time decision)\b",claim): status='uncertain'
+            elif re.match(r"(?:out|ruled out|miss|not play|not be playing|unable to play)\b",claim): status='out'
+            elif re.match(r"(?:available|cleared to play|play)\b",claim): status='available'
+            else: continue
+            key=(match['name'].casefold(),game_day.isoformat())
+            entry=dict(player=match['name'],evidence_id=evidence,status=status)
+            entries=claims.setdefault(key,[])
+            if not any(item['evidence_id']==evidence and item['status']==status for item in entries):
+                entries.append(dict(**entry,published=published,correction=correction,group=group_of.get(evidence,evidence)))
+    disagreements=[];corrections=[];replacements={}
+    for (_,day),entries in claims.items():
+        active=[]
+        for old in entries:
+            newer=[new for new in entries if new['correction'] and new['group']==old['group']
+                   and new['evidence_id']!=old['evidence_id'] and new['published'] and old['published']
+                   and new['published']>old['published']]
+            if newer:
+                latest=max(newer,key=lambda entry:entry['published'])
+                replacements[old['evidence_id']]=latest['evidence_id']
+                corrections.append(dict(player=old['player'],game_date=day,
+                    superseded_evidence_id=old['evidence_id'],correction_evidence_id=latest['evidence_id'],
+                    previous_status=old['status'],corrected_status=latest['status'],resolution='source_correction'))
+            else: active.append(old)
+        if any(a['evidence_id']!=b['evidence_id'] and a['status']!=b['status'] for a in active for b in active):
+            disagreements.append(dict(kind='player_availability',player=active[0]['player'],game_date=day,
+                claims=[{k:v for k,v in entry.items() if k in {'player','evidence_id','status'}} for entry in active],resolution='unresolved'))
+    return dict(disagreements=disagreements,corrections=corrections,replacements=replacements)
+
+
+def availability_disagreements(retrieved, allowed_ids):
+    return availability_assessment(retrieved,allowed_ids)['disagreements']
 
 
 class EvidenceTools:
@@ -380,7 +409,23 @@ def investigate_briefing(result, briefing, previous=None, settings=None, provide
                          if article_id in target_ids and not material["quarantined"]}
         corroboration = sum(any(evidence_id(url) in retrieved_ids for url in group["evidence_urls"])
                             for group in candidate["reporting_groups"])
-        disagreements = availability_disagreements(state['retrieved'], set(target_ids))
+        assessment = availability_assessment(state['retrieved'], set(target_ids), candidate['reporting_groups'])
+        disagreements = assessment['disagreements']
+        record['corrections'] = assessment['corrections']
+        if record['summary'] and assessment['replacements']:
+            revised = []
+            for citation in record['summary']['citations']:
+                replacement = assessment['replacements'].get(citation['evidence_id'])
+                if replacement:
+                    material = state['retrieved'][replacement]['material']
+                    claim = dict(evidence_id=replacement, quote=source_excerpt(material.get('description') or material.get('title') or ''))
+                else:
+                    claim = dict(evidence_id=citation['evidence_id'], quote=citation['quote'])
+                if claim not in revised: revised.append(claim)
+            record['summary'] = supported_summary(revised,state['retrieved'],set(target_ids))
+            for old_id,new_id in assessment['replacements'].items():
+                if clean_text(candidate['title']) == clean_text(tools.articles[old_id]['title']):
+                    record['corrected_title'] = short_text(tools.articles[new_id]['title'],200)
         undated = sorted(article_id for article_id in retrieved_ids
                          if publication_time(state['retrieved'][article_id].get('published_at')) is None)
         record['publication_dates'] = dict(status='incomplete' if undated else 'complete',
@@ -396,6 +441,8 @@ def investigate_briefing(result, briefing, previous=None, settings=None, provide
         record["uncertainty"] = ["Only saved article excerpts were checked, not the full articles."]
         if undated:
             record['uncertainty'].append('Some sources have no usable publication date. Their use of “today,” “tonight” or “tomorrow” cannot be tied to a game date.')
+        if assessment['corrections']:
+            record['uncertainty'].append('A source corrected its earlier availability report. The summary uses the correction; the earlier source remains in the evidence history.')
         if disagreements:
             record['uncertainty'].append('Sources disagree on player availability. The final status is still unconfirmed.')
         if corroboration < 2:
@@ -409,6 +456,8 @@ def investigate_briefing(result, briefing, previous=None, settings=None, provide
             record["summary"]["text"] = "Unconfirmed report. " + record["summary"]["text"]
     for candidate in briefing["candidates"] + briefing["stories"]:
         candidate["investigation"] = records[candidate["id"]]
+        if records[candidate['id']].get('corrected_title'):
+            candidate['title'] = records[candidate['id']]['corrected_title']
         candidate["summary"] = records[candidate["id"]]["summary"]
         candidate["what_changed"] = records[candidate["id"]]["what_changed"]
     briefing["investigation"] = dict(provider=provider.name, status="complete" if all(record["status"] in {"complete", "insufficient_evidence"} for record in records.values()) else "partial",

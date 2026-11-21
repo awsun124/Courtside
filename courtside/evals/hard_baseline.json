@@ -132,5 +132,23 @@
       "explicit-later-correction"
     ],
     "limitation": "Rule-based detection, not proof against arbitrary prompt injection. Tool permissions and citation checks remain separate controls."
+  },
+  "availability_wording_and_correction_fix": {
+    "dataset_sha256": "58dcbabfecb5029a69be3aaf93148941a14f341175cfeec137afb0d4a5e68991",
+    "code_sha256": {
+      "run_news.py": "599e278cd408727986efd1617229ed87f244c62d81d23f3b33d09b01d2d26c3d",
+      "investigation.py": "b68c113ab53402c71261f77e4452fd600bf21fbe24d8af280a485d3aed62f8dd",
+      "investigate.py": "733a959c148b4fd746c2be0902b51305dea62d8cd8a370f774fde173266e0fbf"
+    },
+    "automatic_passes": 12,
+    "automatic_failures": 0,
+    "meaning_reviews_pending": 12,
+    "model_calls": 0,
+    "resolved_cases": [
+      "indirect-absence-wording",
+      "explicit-game-date",
+      "explicit-later-correction"
+    ],
+    "scope": "Automatic checks on development cases, not semantic approval or results on unseen cases. Reserved cases remain unrun."
   }
 }

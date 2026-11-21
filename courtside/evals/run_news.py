@@ -177,7 +177,7 @@ def run_suite(cases_path=DEFAULT_CASES):
 def write_report(report, folder):
     folder.mkdir(parents=True, exist_ok=True)
     (folder/'results.json').write_text(json.dumps(report, indent=2)+'\n')
-    lines=['# News investigator development baseline', '', report['scope'], '',
+    lines=['# '+report.get('report_title','News investigator development baseline'), '', report['scope'], '',
            f"Automatic checks: {report['automatic_passes']}/{report['cases']} cases passed. Meaning review pending: {report['semantic_reviews_pending']}. LLM calls: 0.", '',
            '| Case | Automatic checks | Failed checks | Meaning review |', '| --- | --- | --- | --- |']
     for result in report['results']:
