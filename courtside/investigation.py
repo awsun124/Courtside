@@ -48,9 +48,33 @@ def short_text(text, limit=1200):
 
 
 def suspicious_text(text):
-    text = clean_text(text)
-    return any(phrase in text for phrase in ["ignore previous instructions", "ignore all instructions",
-                "system prompt", "reveal your", "api key", "execute this", "run shell", "call this tool"])
+    """Detect attempts to direct the reader's tools or generated answer.
+
+    Clearly attributed quotations can discuss an attack without issuing it.
+    Commands outside those quotations are still checked. This is a heuristic;
+    tool permissions and evidence checks remain the enforcement boundaries.
+    """
+    quoted = re.compile(r'(?P<quote>["“])(?P<body>[^"“”]*?)["”]')
+    def reported_quote(match):
+        prefix = text[max(0, match.start()-160):match.start()]
+        # Require a reporting verb in the same sentence before the quotation.
+        if re.search(r'\b(?:said|reported|warned|explained|described|quoted|wrote)\b[^.!?"“”]{0,120}$', prefix, re.I):
+            return ' [reported quotation] '
+        return match.group(0)
+    remaining = clean_text(quoted.sub(reported_quote, text or ''))
+    direct = (r'\bignore (?:all |previous |earlier )?instructions\b',
+              r'\breveal your\b', r'\b(?:reveal|print|send|expose)\b.{0,60}\b(?:api key|system prompt|credentials)\b',
+              r'\bexecute this\b', r'\brun shell\b', r'\bcall this tool\b',
+              r'\breplace (?:the |this )?(?:report|summary|answer|response)\b',
+              r'\b(?:next|final) (?:answer|response) must\b',
+              r'\b(?:do not|don t) (?:mention|disclose) this (?:note|instruction|directive)\b',
+              r'\bconceal this (?:note|instruction|directive)\b',
+              r'\boverrides? (?:all |the )?(?:normal |previous |earlier )?(?:fact checks|instructions|rules)\b')
+    if any(re.search(pattern, remaining) for pattern in direct):
+        return True
+    target = re.search(r'\b(?:downstream writer|ai assistant|automated summarizer|your response)\b', remaining)
+    redirect = re.search(r'\b(?:announce|invent|fabricate|replace|output|override|highest priority)\b', remaining)
+    return bool(target and redirect)
 
 
 def publication_time(value):
@@ -154,7 +178,7 @@ class EvidenceTools:
             raise ValueError("This source is available as a headline and link only")
         texts = {name: short_text(article.get(field)) for name, field in
                  [("title", "title"), ("description", "description"), ("excerpt", "content_excerpt")]}
-        quarantined = suspicious_text(" ".join(texts.values()))
+        quarantined = any(suspicious_text(text) for text in texts.values())
         return dict(**self.article_label(article_id), material_scope="Saved API excerpt, not full article text",
                     material={} if quarantined else texts, quarantined=quarantined)
 
