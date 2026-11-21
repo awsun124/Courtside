@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "status": "reserved_not_run",
+  "status": "reserved_evaluated_use_for_development_only",
   "files": {
     "news_cases.json": {
       "sha256": "2f6b8940a4270cdba86f601bf5633bbfadddec1519ff1735439897e060448e96",
@@ -16,10 +16,17 @@
     }
   },
   "rules": [
-    "Use the original and harder development cases while making changes.",
-    "Keep the eight reserved cases out of default commands and CI.",
-    "Before running reserved cases, record the exact code version and settings.",
-    "After examining reserved outputs, treat those cases as development data for future tuning.",
-    "The author has seen these synthetic cases; do not describe them as independently authored or blind."
-  ]
+    "The eight originally reserved cases were evaluated once against the recorded commit.",
+    "They are now visible development data; do not call future results on them untouched.",
+    "Create a new reserved set before another round of tuning and freeze the version before evaluation.",
+    "These cases were author-visible, not an independently authored blind benchmark."
+  ],
+  "first_reserved_run": {
+    "frozen_commit": "c7c9ef129eb8515563c343806744b078c5aaf94c",
+    "dataset_sha256": "10ba450f7562dcef283c348d1055f2744cf9d713b23b594c334b1ffa8b2355a7",
+    "results_file": "reserved_results.json",
+    "automatic_passes": 8,
+    "assistant_meaning_passes": 8,
+    "model_calls": 0
+  }
 }
