@@ -5,7 +5,7 @@ export interface Citation {
   publisher: string
   url: string
   quote: string
-  published_at: string
+  published_at: string | null
 }
 
 export interface Summary {

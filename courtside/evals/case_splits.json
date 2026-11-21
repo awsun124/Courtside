@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "status": "reserved_not_run",
+  "files": {
+    "news_cases.json": {
+      "sha256": "2f6b8940a4270cdba86f601bf5633bbfadddec1519ff1735439897e060448e96",
+      "cases": 15
+    },
+    "news_cases_hard.json": {
+      "sha256": "58dcbabfecb5029a69be3aaf93148941a14f341175cfeec137afb0d4a5e68991",
+      "cases": 12
+    },
+    "news_cases_reserved.json": {
+      "sha256": "10ba450f7562dcef283c348d1055f2744cf9d713b23b594c334b1ffa8b2355a7",
+      "cases": 8
+    }
+  },
+  "rules": [
+    "Use the original and harder development cases while making changes.",
+    "Keep the eight reserved cases out of default commands and CI.",
+    "Before running reserved cases, record the exact code version and settings.",
+    "After examining reserved outputs, treat those cases as development data for future tuning.",
+    "The author has seen these synthetic cases; do not describe them as independently authored or blind."
+  ]
+}

@@ -53,6 +53,17 @@ def suspicious_text(text):
                 "system prompt", "reveal your", "api key", "execute this", "run shell", "call this tool"])
 
 
+def publication_time(value):
+    """Return a dated source time, or None when the date cannot be established."""
+    if not isinstance(value, str):
+        return None
+    try:
+        parsed = datetime.fromisoformat(value.replace('Z', '+00:00'))
+        return parsed if parsed.tzinfo is not None else None
+    except ValueError:
+        return None
+
+
 def availability_disagreements(retrieved, allowed_ids):
     """Find explicit differences in reports about a player’s availability.
 
@@ -65,13 +76,10 @@ def availability_disagreements(retrieved, allowed_ids):
     for evidence, material in retrieved.items():
         if evidence not in allowed_ids or material.get('quarantined'):
             continue
-        try:
-            published = datetime.fromisoformat(material['published_at'].replace('Z', '+00:00'))
-            if published.tzinfo is None:
-                continue
-            day = published.astimezone(ZoneInfo('America/New_York')).date()
-        except (ValueError, KeyError, TypeError):
+        published = publication_time(material.get('published_at'))
+        if published is None:
             continue
+        day = published.astimezone(ZoneInfo('America/New_York')).date()
         # Use the fullest single saved field to avoid duplicate title/excerpt claims.
         texts = material.get('material', {})
         text = texts.get('excerpt') or texts.get('description') or texts.get('title') or ''
@@ -115,9 +123,10 @@ class EvidenceTools:
 
     def article_label(self, article_id):
         article = self.articles[article_id]
+        published = publication_time(article.get('published_at'))
         return dict(evidence_id=article_id, title=short_text(article["title"], 200),
                     publisher=article["publisher_name"], url=article["url"],
-                    published_at=article["published_at"], untrusted=True)
+                    published_at=published.isoformat() if published else None, untrusted=True)
 
     def search_articles(self, query, limit):
         if not isinstance(query, str) or not 1 <= len(query) <= 200 or type(limit) is not int or not 1 <= limit <= 5:
@@ -348,13 +357,21 @@ def investigate_briefing(result, briefing, previous=None, settings=None, provide
         corroboration = sum(any(evidence_id(url) in retrieved_ids for url in group["evidence_urls"])
                             for group in candidate["reporting_groups"])
         disagreements = availability_disagreements(state['retrieved'], set(target_ids))
+        undated = sorted(article_id for article_id in retrieved_ids
+                         if publication_time(state['retrieved'][article_id].get('published_at')) is None)
+        record['publication_dates'] = dict(status='incomplete' if undated else 'complete',
+                                          missing_evidence_ids=undated)
         record['conflicts'] = dict(status='detected' if disagreements else 'not_detected',
                                    scope='Explicit player availability for the same named player and game day only',
+                                   date_coverage='incomplete' if undated else 'complete',
                                    items=disagreements)
         record["corroboration"] = dict(retrieved_reporting_groups=corroboration,
                                        status='conflicting_reports' if disagreements else
+                                       'timing_unverified' if undated else
                                        "multiple_reporting_groups" if corroboration >= 2 else "limited")
         record["uncertainty"] = ["Only saved article excerpts were checked, not the full articles."]
+        if undated:
+            record['uncertainty'].append('Some sources have no usable publication date. Their use of “today,” “tonight” or “tomorrow” cannot be tied to a game date.')
         if disagreements:
             record['uncertainty'].append('Sources disagree on player availability. The final status is still unconfirmed.')
         if corroboration < 2:

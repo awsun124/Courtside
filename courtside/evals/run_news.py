@@ -72,7 +72,7 @@ def adapt_case(case):
     text = ' '.join(a.get('description') or a['title'] for a in targets).lower()
     story = dict(id=case['id'], title=targets[0]['title'], event='news', article_urls=urls,
                  evidence_urls=urls, reporting_groups=[dict(evidence_urls=[a['url'] for a in members],
-                 publishers=[a['publisher_name'] for a in members], first_published_at=members[0]['published_at'])
+                 publishers=[a['publisher_name'] for a in members], first_published_at=members[0].get('published_at'))
                  for members in groups.values()], has_rumor=any(word in text for word in ('reportedly', 'rumor', 'speculation')),
                  score=50, rank=1, breakdown=dict(coverage=dict(independent_publishers=len(groups))))
     related = [dict(id='related-'+a['id'], title=a['title'], event='news', article_urls=[a['url']])

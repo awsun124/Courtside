@@ -2,9 +2,8 @@ import argparse
 import json
 from pathlib import Path
 
-from .investigation import InvestigationSettings, investigate_briefing
+from .investigation import InvestigationSettings, investigate_briefing, publication_time
 from .llm import ChatProvider
-from .stories import parse_date
 from scripts.validate_gdelt import canonical_url
 from .storage import initialize_database, read_briefings, read_run
 
@@ -32,8 +31,9 @@ def add_investigations(result, briefing, previous, settings_file=None, env_file=
                     urls = [url for url in group["evidence_urls"] if canonical_url(url) in allowed_articles]
                     if urls:
                         members = [allowed_articles[canonical_url(url)] for url in urls]
+                        dates = [date for a in members if (date := publication_time(a.get('published_at'))) is not None]
                         groups.append(dict(evidence_urls=urls, publishers=sorted({a["publisher_name"] for a in members}),
-                                           first_published_at=min((a["published_at"] for a in members), key=parse_date)))
+                                           first_published_at=min(dates).isoformat() if dates else None))
                 saved["reporting_groups"] = groups
             return saved
 

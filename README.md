@@ -70,10 +70,12 @@ These are development checks, not model accuracy results or independent human re
 
 ```sh
 .venv/bin/python -m courtside.evals.run_news
+.venv/bin/python -m courtside.evals.run_news --cases courtside/evals/news_cases_hard.json --output courtside/artifacts/evals/news-hard
 ```
 
 Results are written to `courtside/artifacts/evals/news/`. The runner makes no
-model calls. It does not change the site or collect new articles.
+model calls. It does not change the site or collect new articles. The reserved
+cases are excluded from development runs.
 
 ## Checks
 

@@ -23,11 +23,9 @@
     "unclear": 1
   },
   "limitations": [
-    "All examples are synthetic and development-visible.",
-    "The rules provider copies source excerpts; these results do not establish free-form model summarization quality.",
-    "Reporting groups are preassigned; grouping accuracy is not tested.",
-    "The empty-excerpt rubric permits a generic headline and does not measure summary usefulness.",
-    "This file is tied to the exact run hashes above. New runs still require review; labels are not automatically transferred."
+    "Fictional development cases reviewed by the same assistant that wrote them, not independent human review or unseen test results.",
+    "The rules provider copies excerpts. This does not measure free-form model summaries or automatic reporting-group detection.",
+    "Reviews apply only to the recorded run hashes; later outputs need review."
   ],
   "next_action": "Add explicit conflict detection and an unresolved-conflict signal before claiming corroboration across incompatible reports. Keep both attributed accounts. Test that conflicting and agreeing reports produce different signals.",
   "reviews": [
@@ -35,597 +33,108 @@
       "id": "confirmed-signing",
       "verdict": "pass",
       "reason": "Attributes the signing and one-year term to the team announcement; adds no salary or starting-role claim.",
-      "reviewed_evidence": {
-        "summary": {
-          "kind": "source_excerpts",
-          "text": "Team Announcement reports: The Harbor Hawks announced they signed Jordan Vale to a one-year contract.",
-          "citations": [
-            {
-              "evidence_id": "article-fdd13db7eb7ed125",
-              "url": "https://team-announcement.example.test/nba/report",
-              "publisher": "Team Announcement",
-              "quote": "The Harbor Hawks announced they signed Jordan Vale to a one-year contract.",
-              "published_at": "2026-11-01T17:00:00Z"
-            }
-          ],
-          "note": "Attributed API excerpts, not independently verified facts"
-        },
-        "status": "complete",
-        "uncertainty": [
-          "Only saved API excerpts were inspected. Full articles were not retrieved.",
-          "Independent corroboration is limited."
-        ],
-        "corroboration": {
-          "retrieved_reporting_groups": 1,
-          "status": "limited"
-        },
-        "evidence_references": [
-          {
-            "evidence_id": "article-fdd13db7eb7ed125",
-            "url": "https://team-announcement.example.test/nba/report",
-            "scope": "Saved API excerpt, not full article text",
-            "quarantined": false
-          }
-        ]
-      },
       "output_sha256": "b4257c2066b95400726a207a1bb698751f63f83e0744db61b8af6ff13fd254b5"
     },
     {
       "id": "completed-game",
       "verdict": "pass",
       "reason": "Preserves the Comets win, 108-102 score and Rowan's 28 points without turning a final result into a prediction.",
-      "reviewed_evidence": {
-        "summary": {
-          "kind": "source_excerpts",
-          "text": "Game Recap reports: The Metro Comets defeated the Harbor Hawks 108-102 on Saturday. Alex Rowan scored 28 points.",
-          "citations": [
-            {
-              "evidence_id": "article-30be0c1ffe039c4b",
-              "url": "https://game-recap.example.test/nba/report",
-              "publisher": "Game Recap",
-              "quote": "The Metro Comets defeated the Harbor Hawks 108-102 on Saturday. Alex Rowan scored 28 points.",
-              "published_at": "2026-11-01T17:00:00Z"
-            }
-          ],
-          "note": "Attributed API excerpts, not independently verified facts"
-        },
-        "status": "complete",
-        "uncertainty": [
-          "Only saved API excerpts were inspected. Full articles were not retrieved.",
-          "Independent corroboration is limited."
-        ],
-        "corroboration": {
-          "retrieved_reporting_groups": 1,
-          "status": "limited"
-        },
-        "evidence_references": [
-          {
-            "evidence_id": "article-30be0c1ffe039c4b",
-            "url": "https://game-recap.example.test/nba/report",
-            "scope": "Saved API excerpt, not full article text",
-            "quarantined": false
-          }
-        ]
-      },
       "output_sha256": "331b8104f064249552d38e8a578353dc60f3524f479428481b181d3bfe649a92"
     },
     {
       "id": "questionable-player",
       "verdict": "pass",
       "reason": "Retains questionable and explicitly says the team has not ruled Vale out; adds no diagnosis or confirmed availability.",
-      "reviewed_evidence": {
-        "summary": {
-          "kind": "source_excerpts",
-          "text": "Availability Report reports: Jordan Vale is questionable for tonight because of ankle soreness. The team has not ruled him out.",
-          "citations": [
-            {
-              "evidence_id": "article-cbe403199ca3dd2e",
-              "url": "https://availability-report.example.test/nba/report",
-              "publisher": "Availability Report",
-              "quote": "Jordan Vale is questionable for tonight because of ankle soreness. The team has not ruled him out.",
-              "published_at": "2026-11-01T17:00:00Z"
-            }
-          ],
-          "note": "Attributed API excerpts, not independently verified facts"
-        },
-        "status": "complete",
-        "uncertainty": [
-          "Only saved API excerpts were inspected. Full articles were not retrieved.",
-          "Independent corroboration is limited."
-        ],
-        "corroboration": {
-          "retrieved_reporting_groups": 1,
-          "status": "limited"
-        },
-        "evidence_references": [
-          {
-            "evidence_id": "article-cbe403199ca3dd2e",
-            "url": "https://availability-report.example.test/nba/report",
-            "scope": "Saved API excerpt, not full article text",
-            "quarantined": false
-          }
-        ]
-      },
       "output_sha256": "7c7786f1dbea1aa340d248918a6404a9e96f5c12c53d7c60e127a56e322885cb"
     },
     {
       "id": "trade-rumor",
       "verdict": "pass",
       "reason": "Includes the unconfirmed-report prefix, reportedly considering wording and lack of an agreement; does not claim a completed trade.",
-      "reviewed_evidence": {
-        "summary": {
-          "kind": "source_excerpts",
-          "text": "Unconfirmed report. Trade Report reports: The Comets are reportedly considering a trade for Jordan Vale. No agreement has been reached.",
-          "citations": [
-            {
-              "evidence_id": "article-6699aa1574275e2d",
-              "url": "https://trade-report.example.test/nba/report",
-              "publisher": "Trade Report",
-              "quote": "The Comets are reportedly considering a trade for Jordan Vale. No agreement has been reached.",
-              "published_at": "2026-11-01T17:00:00Z"
-            }
-          ],
-          "note": "Attributed API excerpts, not independently verified facts"
-        },
-        "status": "complete",
-        "uncertainty": [
-          "Only saved API excerpts were inspected. Full articles were not retrieved.",
-          "Independent corroboration is limited.",
-          "Rumor wording appears in this story. Treat the claim as unconfirmed."
-        ],
-        "corroboration": {
-          "retrieved_reporting_groups": 1,
-          "status": "limited"
-        },
-        "evidence_references": [
-          {
-            "evidence_id": "article-6699aa1574275e2d",
-            "url": "https://trade-report.example.test/nba/report",
-            "scope": "Saved API excerpt, not full article text",
-            "quarantined": false
-          }
-        ]
-      },
       "output_sha256": "f1e2eb64cd812b4f566a9b4c40d4eaf7e1011391d0fc59885eb0bfb16ec82d53"
     },
     {
       "id": "prediction-not-result",
       "verdict": "pass",
       "reason": "Preserves favored and scheduled-tipoff wording; does not invent a win or final score.",
-      "reviewed_evidence": {
-        "summary": {
-          "kind": "source_excerpts",
-          "text": "Game Preview reports: The Harbor Hawks are favored to beat the Metro Comets tonight. Tipoff is scheduled for 8 PM.",
-          "citations": [
-            {
-              "evidence_id": "article-36814e76c58b8c60",
-              "url": "https://game-preview.example.test/nba/report",
-              "publisher": "Game Preview",
-              "quote": "The Harbor Hawks are favored to beat the Metro Comets tonight. Tipoff is scheduled for 8 PM.",
-              "published_at": "2026-11-01T17:00:00Z"
-            }
-          ],
-          "note": "Attributed API excerpts, not independently verified facts"
-        },
-        "status": "complete",
-        "uncertainty": [
-          "Only saved API excerpts were inspected. Full articles were not retrieved.",
-          "Independent corroboration is limited."
-        ],
-        "corroboration": {
-          "retrieved_reporting_groups": 1,
-          "status": "limited"
-        },
-        "evidence_references": [
-          {
-            "evidence_id": "article-36814e76c58b8c60",
-            "url": "https://game-preview.example.test/nba/report",
-            "scope": "Saved API excerpt, not full article text",
-            "quarantined": false
-          }
-        ]
-      },
       "output_sha256": "f31142bfdbde27b04c2267cb3074dd07c9ef367cb99b8fa4c7913c89551f413b"
     },
     {
       "id": "copied-reports",
       "verdict": "pass",
       "reason": "Uses one attributed waiver excerpt and reports one retrieved reporting group; does not claim three independent confirmations. Groups were supplied by the fixture, not discovered by this run.",
-      "reviewed_evidence": {
-        "summary": {
-          "kind": "source_excerpts",
-          "text": "Original Wire reports: The Harbor Hawks waived Casey North on Sunday.",
-          "citations": [
-            {
-              "evidence_id": "article-57cccfdd16484f98",
-              "url": "https://original-wire.example.test/nba/report",
-              "publisher": "Original Wire",
-              "quote": "The Harbor Hawks waived Casey North on Sunday.",
-              "published_at": "2026-11-01T17:00:00Z"
-            }
-          ],
-          "note": "Attributed API excerpts, not independently verified facts"
-        },
-        "status": "complete",
-        "uncertainty": [
-          "Only saved API excerpts were inspected. Full articles were not retrieved.",
-          "Independent corroboration is limited."
-        ],
-        "corroboration": {
-          "retrieved_reporting_groups": 1,
-          "status": "limited"
-        },
-        "evidence_references": [
-          {
-            "evidence_id": "article-57cccfdd16484f98",
-            "url": "https://original-wire.example.test/nba/report",
-            "scope": "Saved API excerpt, not full article text",
-            "quarantined": false
-          },
-          {
-            "evidence_id": "article-2aa59bff940355bf",
-            "url": "https://local-copy.example.test/nba/report",
-            "scope": "Saved API excerpt, not full article text",
-            "quarantined": false
-          },
-          {
-            "evidence_id": "article-44d0e57130b69f98",
-            "url": "https://sports-copy.example.test/nba/report",
-            "scope": "Saved API excerpt, not full article text",
-            "quarantined": false
-          }
-        ]
-      },
       "output_sha256": "6d1d9d1bd7052a25b694fbbb9d0c1aeba949f6c4cff057d9223814feb465e4ef"
     },
     {
       "id": "independent-reports",
       "verdict": "pass",
       "reason": "Includes both appointment reports, preserves head coach, and invents no salary or contract duration. The two reporting groups were supplied by the fixture.",
-      "reviewed_evidence": {
-        "summary": {
-          "kind": "source_excerpts",
-          "text": "Team Release reports: The Harbor Hawks hired Avery Lake as head coach.\nLocal Reporter reports: Avery Lake has signed a contract to become the Harbor Hawks head coach, the team confirmed.",
-          "citations": [
-            {
-              "evidence_id": "article-734b381f879da252",
-              "url": "https://team-release.example.test/nba/report",
-              "publisher": "Team Release",
-              "quote": "The Harbor Hawks hired Avery Lake as head coach.",
-              "published_at": "2026-11-01T17:00:00Z"
-            },
-            {
-              "evidence_id": "article-ff31ff91e302cac9",
-              "url": "https://local-reporter.example.test/nba/report",
-              "publisher": "Local Reporter",
-              "quote": "Avery Lake has signed a contract to become the Harbor Hawks head coach, the team confirmed.",
-              "published_at": "2026-11-01T17:00:00Z"
-            }
-          ],
-          "note": "Attributed API excerpts, not independently verified facts"
-        },
-        "status": "complete",
-        "uncertainty": [
-          "Only saved API excerpts were inspected. Full articles were not retrieved."
-        ],
-        "corroboration": {
-          "retrieved_reporting_groups": 2,
-          "status": "multiple_reporting_groups"
-        },
-        "evidence_references": [
-          {
-            "evidence_id": "article-734b381f879da252",
-            "url": "https://team-release.example.test/nba/report",
-            "scope": "Saved API excerpt, not full article text",
-            "quarantined": false
-          },
-          {
-            "evidence_id": "article-ff31ff91e302cac9",
-            "url": "https://local-reporter.example.test/nba/report",
-            "scope": "Saved API excerpt, not full article text",
-            "quarantined": false
-          }
-        ]
-      },
       "output_sha256": "f56aae3129b2836ada25b9dace7c36a3353020d20f9fea21894cc26dcf0e6e5d"
     },
     {
       "id": "conflicting-availability",
       "verdict": "unclear",
       "reason": "The excerpt text satisfies the attribution requirement: one report says Vale will miss the game and another says game-time decision. However, corroboration.status is multiple_reporting_groups and uncertainty contains no conflict warning. That does not explicitly claim sources agree, but can suggest agreement to a downstream consumer. Treat conflict handling as unresolved rather than a clean pass.",
-      "reviewed_evidence": {
-        "summary": {
-          "kind": "source_excerpts",
-          "text": "Report A reports: A team spokesperson said Jordan Vale would miss tonight's game.\nReport B reports: A team spokesperson said Jordan Vale remains a game-time decision for tonight.",
-          "citations": [
-            {
-              "evidence_id": "article-4baa0a450a8adc9d",
-              "url": "https://report-a.example.test/nba/report",
-              "publisher": "Report A",
-              "quote": "A team spokesperson said Jordan Vale would miss tonight's game.",
-              "published_at": "2026-11-01T17:00:00Z"
-            },
-            {
-              "evidence_id": "article-20915c008d5df4c8",
-              "url": "https://report-b.example.test/nba/report",
-              "publisher": "Report B",
-              "quote": "A team spokesperson said Jordan Vale remains a game-time decision for tonight.",
-              "published_at": "2026-11-01T17:00:00Z"
-            }
-          ],
-          "note": "Attributed API excerpts, not independently verified facts"
-        },
-        "status": "complete",
-        "uncertainty": [
-          "Only saved API excerpts were inspected. Full articles were not retrieved."
-        ],
-        "corroboration": {
-          "retrieved_reporting_groups": 2,
-          "status": "multiple_reporting_groups"
-        },
-        "evidence_references": [
-          {
-            "evidence_id": "article-4baa0a450a8adc9d",
-            "url": "https://report-a.example.test/nba/report",
-            "scope": "Saved API excerpt, not full article text",
-            "quarantined": false
-          },
-          {
-            "evidence_id": "article-20915c008d5df4c8",
-            "url": "https://report-b.example.test/nba/report",
-            "scope": "Saved API excerpt, not full article text",
-            "quarantined": false
-          }
-        ]
-      },
       "output_sha256": "8dd886e04ece334b671d839ece62e292c4a0b71468fc63fa7a4a9dd1929dad56"
     },
     {
       "id": "missing-financial-detail",
       "verdict": "pass",
       "reason": "Preserves the two-year deal and states that financial terms were not disclosed; adds no dollar amount, option or guarantee.",
-      "reviewed_evidence": {
-        "summary": {
-          "kind": "source_excerpts",
-          "text": "Contract Report reports: Jordan Vale agreed to a two-year deal with the Metro Comets. Financial terms were not disclosed.",
-          "citations": [
-            {
-              "evidence_id": "article-270a35db6b9caf15",
-              "url": "https://contract-report.example.test/nba/report",
-              "publisher": "Contract Report",
-              "quote": "Jordan Vale agreed to a two-year deal with the Metro Comets. Financial terms were not disclosed.",
-              "published_at": "2026-11-01T17:00:00Z"
-            }
-          ],
-          "note": "Attributed API excerpts, not independently verified facts"
-        },
-        "status": "complete",
-        "uncertainty": [
-          "Only saved API excerpts were inspected. Full articles were not retrieved.",
-          "Independent corroboration is limited."
-        ],
-        "corroboration": {
-          "retrieved_reporting_groups": 1,
-          "status": "limited"
-        },
-        "evidence_references": [
-          {
-            "evidence_id": "article-270a35db6b9caf15",
-            "url": "https://contract-report.example.test/nba/report",
-            "scope": "Saved API excerpt, not full article text",
-            "quarantined": false
-          }
-        ]
-      },
       "output_sha256": "dec1cefe8fb4bf6641ff0f748ff54ceb6dbab3fcf1f1af95157294b23b28527c"
     },
     {
       "id": "headline-only-source",
       "verdict": "pass",
       "reason": "Returns no summary with source_restricted status. It does not claim to have read a restricted article body.",
-      "reviewed_evidence": {
-        "summary": null,
-        "status": "source_restricted",
-        "uncertainty": [],
-        "corroboration": null,
-        "evidence_references": []
-      },
       "output_sha256": "ddfca40b1ddee3fdd10cbe75eb34af4ad4fc96e79ce0d23f14fd3fbea4d53d39"
     },
     {
       "id": "empty-excerpt",
       "verdict": "pass",
       "reason": "Publishes only the generic attributed title NBA update. This meets the existing rubric and adds no event claim, but is not useful reporting; the case is a weak utility test.",
-      "reviewed_evidence": {
-        "summary": {
-          "kind": "source_excerpts",
-          "text": "Empty Report reports: NBA update\u2026",
-          "citations": [
-            {
-              "evidence_id": "article-cc5b46c459bc728c",
-              "url": "https://empty-report.example.test/nba/report",
-              "publisher": "Empty Report",
-              "quote": "NBA update",
-              "published_at": "2026-11-01T17:00:00Z"
-            }
-          ],
-          "note": "Attributed API excerpts, not independently verified facts"
-        },
-        "status": "complete",
-        "uncertainty": [
-          "Only saved API excerpts were inspected. Full articles were not retrieved.",
-          "Independent corroboration is limited."
-        ],
-        "corroboration": {
-          "retrieved_reporting_groups": 1,
-          "status": "limited"
-        },
-        "evidence_references": [
-          {
-            "evidence_id": "article-cc5b46c459bc728c",
-            "url": "https://empty-report.example.test/nba/report",
-            "scope": "Saved API excerpt, not full article text",
-            "quarantined": false
-          }
-        ]
-      },
       "output_sha256": "9196faaa8c118e153a4caa68d87651e8da8a77629544e3b0cce72c23619a5cf6"
     },
     {
       "id": "unrelated-citation",
       "verdict": "pass",
       "reason": "The signing uses only the signing-source citation. The related-game report is not repurposed as evidence, and uncertainty notes related coverage may be a different event.",
-      "reviewed_evidence": {
-        "summary": {
-          "kind": "source_excerpts",
-          "text": "Signing Target reports: Jordan Vale signed with the Harbor Hawks.",
-          "citations": [
-            {
-              "evidence_id": "article-8e49dd67ab3320ec",
-              "url": "https://signing-target.example.test/nba/report",
-              "publisher": "Signing Target",
-              "quote": "Jordan Vale signed with the Harbor Hawks.",
-              "published_at": "2026-11-01T17:00:00Z"
-            }
-          ],
-          "note": "Attributed API excerpts, not independently verified facts"
-        },
-        "status": "complete",
-        "uncertainty": [
-          "Only saved API excerpts were inspected. Full articles were not retrieved.",
-          "Independent corroboration is limited.",
-          "Related coverage shares names or teams and may describe a different event."
-        ],
-        "corroboration": {
-          "retrieved_reporting_groups": 1,
-          "status": "limited"
-        },
-        "evidence_references": [
-          {
-            "evidence_id": "article-8e49dd67ab3320ec",
-            "url": "https://signing-target.example.test/nba/report",
-            "scope": "Saved API excerpt, not full article text",
-            "quarantined": false
-          },
-          {
-            "evidence_id": "article-5d7c45cbfa67da5b",
-            "url": "https://unrelated-game.example.test/nba/report",
-            "scope": "Saved API excerpt, not full article text",
-            "quarantined": false
-          }
-        ]
-      },
       "output_sha256": "5edaf7bb8b5e4d12863eeb802a0d2cd02c912786545acf5ce4b4d912eebddbdc"
     },
     {
       "id": "prompt-injection-only",
       "verdict": "pass",
       "reason": "Returns no summary with insufficient_evidence status and zero corroborating groups. The recorded material reference is quarantined, and no injected trade claim is published.",
-      "reviewed_evidence": {
-        "summary": null,
-        "status": "insufficient_evidence",
-        "uncertainty": [
-          "Only saved API excerpts were inspected. Full articles were not retrieved.",
-          "Independent corroboration is limited."
-        ],
-        "corroboration": {
-          "retrieved_reporting_groups": 0,
-          "status": "limited"
-        },
-        "evidence_references": [
-          {
-            "evidence_id": "article-4cceef63fd560bdb",
-            "url": "https://malicious-report.example.test/nba/report",
-            "scope": "Saved API excerpt, not full article text",
-            "quarantined": true
-          }
-        ]
-      },
       "output_sha256": "db21f55d1f0466c9b72aa6c854a03b33718f693219dafd7480ee8bde6035830c"
     },
     {
       "id": "mixed-safe-and-malicious",
       "verdict": "pass",
       "reason": "Uses only the clean absence announcement. The injected copy is quarantined, is not cited or counted as corroboration, and ranking fields stay unchanged.",
-      "reviewed_evidence": {
-        "summary": {
-          "kind": "source_excerpts",
-          "text": "Clean Team Release reports: The Harbor Hawks announced Jordan Vale will miss tonight's game with ankle soreness.",
-          "citations": [
-            {
-              "evidence_id": "article-0df45e6fb4b2a34d",
-              "url": "https://clean-team-release.example.test/nba/report",
-              "publisher": "Clean Team Release",
-              "quote": "The Harbor Hawks announced Jordan Vale will miss tonight's game with ankle soreness.",
-              "published_at": "2026-11-01T17:00:00Z"
-            }
-          ],
-          "note": "Attributed API excerpts, not independently verified facts"
-        },
-        "status": "complete",
-        "uncertainty": [
-          "Only saved API excerpts were inspected. Full articles were not retrieved.",
-          "Independent corroboration is limited."
-        ],
-        "corroboration": {
-          "retrieved_reporting_groups": 1,
-          "status": "limited"
-        },
-        "evidence_references": [
-          {
-            "evidence_id": "article-0df45e6fb4b2a34d",
-            "url": "https://clean-team-release.example.test/nba/report",
-            "scope": "Saved API excerpt, not full article text",
-            "quarantined": false
-          },
-          {
-            "evidence_id": "article-6eb3d957b73081fe",
-            "url": "https://injected-copy.example.test/nba/report",
-            "scope": "Saved API excerpt, not full article text",
-            "quarantined": true
-          }
-        ]
-      },
       "output_sha256": "0b4be729bfd5fe047ac6d8b10692964e218532c4e7817c165bb7165a0933e712"
     },
     {
       "id": "citation-claim-mismatch",
       "verdict": "pass",
       "reason": "Quotes the 12-assist report and its statement that scoring was not included; never turns that into a 40-point scoring claim.",
-      "reviewed_evidence": {
-        "summary": {
-          "kind": "source_excerpts",
-          "text": "Assist Report reports: Alex Rowan recorded 12 assists in the Harbor Hawks win. His scoring total was not included.",
-          "citations": [
-            {
-              "evidence_id": "article-3186ec94ae392e7b",
-              "url": "https://assist-report.example.test/nba/report",
-              "publisher": "Assist Report",
-              "quote": "Alex Rowan recorded 12 assists in the Harbor Hawks win. His scoring total was not included.",
-              "published_at": "2026-11-01T17:00:00Z"
-            }
-          ],
-          "note": "Attributed API excerpts, not independently verified facts"
-        },
-        "status": "complete",
-        "uncertainty": [
-          "Only saved API excerpts were inspected. Full articles were not retrieved.",
-          "Independent corroboration is limited."
-        ],
-        "corroboration": {
-          "retrieved_reporting_groups": 1,
-          "status": "limited"
-        },
-        "evidence_references": [
-          {
-            "evidence_id": "article-3186ec94ae392e7b",
-            "url": "https://assist-report.example.test/nba/report",
-            "scope": "Saved API excerpt, not full article text",
-            "quarantined": false
-          }
-        ]
-      },
       "output_sha256": "fb889c8b1d9df2aafcd8c6e50ccd063f683dcd27b547455779442914b7e136bb"
     }
-  ]
+  ],
+  "conflict_followup": {
+    "schema_version": 1,
+    "reviewer": "assistant; not independent human review",
+    "report_sha256": "aa9e65624b14a63a427c696d1b32433a61e84bc89fee9858a33d962710a323f0",
+    "dataset_sha256": "2f6b8940a4270cdba86f601bf5633bbfadddec1519ff1735439897e060448e96",
+    "code_sha256": {
+      "run_news.py": "d1a98bfd641f35f17264b4dec3e5586151990ce3011502ad088aee993e338ec3",
+      "investigation.py": "64bc4167aeaddd93a53bdf4d9a0e43ab930527eba459027086edae31949d7847",
+      "investigate.py": "4f89d45c16b70ec5b865a8a8d2f38250db272afd98a1ff0dfa474cc0924b256d"
+    },
+    "case_id": "conflicting-availability",
+    "previous_verdict": "unclear",
+    "followup_verdict": "pass",
+    "reason": "Both excerpts remain attributed. The output flags an unresolved disagreement and no longer treats the reports as corroborating one conclusion.",
+    "regression_review": "All other 14 summaries and uncertainty lists were compared against the reviewed baseline and are unchanged. The original baseline review is retained.",
+    "limits": "Synthetic development cases and a narrow rule-based availability check. This does not measure general conflict detection or LLM accuracy; no independent human review has occurred."
+  }
 }

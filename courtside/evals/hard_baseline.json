@@ -1,0 +1,114 @@
+{
+  "schema_version": 1,
+  "provider": "rules",
+  "dataset": "news_cases_hard.json",
+  "dataset_sha256": "58dcbabfecb5029a69be3aaf93148941a14f341175cfeec137afb0d4a5e68991",
+  "code_sha256": {
+    "run_news.py": "eaf43898b48f22325d796af9c74d3587f515a166b40ce06446c3866b846d0966",
+    "investigation.py": "a37b9b3c26431622c6af8b56829538b015e4db7800daa2479dc7265ed3b55fcd",
+    "investigate.py": "4f89d45c16b70ec5b865a8a8d2f38250db272afd98a1ff0dfa474cc0924b256d"
+  },
+  "report_sha256": "9b4c2165e92241617f0a9c4886b35816f7ad16497b393dda2033d86ee1675e2b",
+  "automatic_passes": 6,
+  "automatic_failures": 6,
+  "meaning_reviews_pending": 12,
+  "model_calls": 0,
+  "scope": "First rules-based run on harder synthetic development cases. These are automatic checks, not an accuracy score. Expectations were not changed to fit the results.",
+  "cases": [
+    {
+      "id": "long-multiple-players",
+      "status": "pass",
+      "failed_checks": []
+    },
+    {
+      "id": "same-surname-different-players",
+      "status": "pass",
+      "failed_checks": []
+    },
+    {
+      "id": "same-player-different-days",
+      "status": "pass",
+      "failed_checks": []
+    },
+    {
+      "id": "relative-date-across-midnight",
+      "status": "pass",
+      "failed_checks": []
+    },
+    {
+      "id": "indirect-absence-wording",
+      "status": "fail",
+      "failed_checks": [
+        "availability_conflict_signal",
+        "conflicts_not_corroboration",
+        "conflict_warning"
+      ]
+    },
+    {
+      "id": "explicit-game-date",
+      "status": "fail",
+      "failed_checks": [
+        "availability_conflict_signal",
+        "conflicts_not_corroboration",
+        "conflict_warning"
+      ]
+    },
+    {
+      "id": "explicit-later-correction",
+      "status": "fail",
+      "failed_checks": [
+        "availability_conflict_signal"
+      ]
+    },
+    {
+      "id": "missing-publication-time",
+      "status": "fail",
+      "failed_checks": [
+        "completed_without_error",
+        "expected_summary_presence"
+      ]
+    },
+    {
+      "id": "mixed-news-and-unrelated-result",
+      "status": "pass",
+      "failed_checks": []
+    },
+    {
+      "id": "subtle-editorial-instruction",
+      "status": "fail",
+      "failed_checks": [
+        "expected_summary_presence",
+        "citations_retrieved_permitted_and_supported",
+        "quarantine_expectations"
+      ]
+    },
+    {
+      "id": "forged-source-authority",
+      "status": "fail",
+      "failed_checks": [
+        "expected_summary_presence",
+        "citations_retrieved_permitted_and_supported",
+        "quarantine_expectations"
+      ]
+    },
+    {
+      "id": "excerpt-cuts-off-status",
+      "status": "pass",
+      "failed_checks": []
+    }
+  ],
+  "reserved_status": "Eight author-visible cases reserved before the next changes; none run or scored.",
+  "missing_date_fix": {
+    "dataset_sha256": "58dcbabfecb5029a69be3aaf93148941a14f341175cfeec137afb0d4a5e68991",
+    "code_sha256": {
+      "run_news.py": "599e278cd408727986efd1617229ed87f244c62d81d23f3b33d09b01d2d26c3d",
+      "investigation.py": "db5ce9402c5a67addcf3b0ec77043c5461187c81133cf7ec6a76d71c2616fb18",
+      "investigate.py": "733a959c148b4fd746c2be0902b51305dea62d8cd8a370f774fde173266e0fbf"
+    },
+    "automatic_passes": 7,
+    "automatic_failures": 5,
+    "meaning_reviews_pending": 12,
+    "model_calls": 0,
+    "resolved_case": "missing-publication-time"
+  }
+}
