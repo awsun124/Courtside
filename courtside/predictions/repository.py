@@ -1,4 +1,4 @@
-"""Durable prediction observations, outcomes and collection state (SQLite/Postgres)."""
+"""Store saved predictions, final results and collection status in SQLite or PostgreSQL."""
 
 from contextlib import closing
 from datetime import date,timedelta
@@ -130,7 +130,7 @@ def select_observations(records,now):
 
 
 def latest_query(condition):
-    """Choose one observation per game inside SQL to avoid replaying every revision."""
+    """Select one saved prediction per game in SQL instead of loading every version."""
     return ('SELECT saved_at,payload FROM (SELECT saved_at,payload, '
         'ROW_NUMBER() OVER (PARTITION BY game_id ORDER BY '
         'CASE WHEN model_version IS NOT NULL AND saved_at<=cutoff_at THEN 1 ELSE 0 END DESC, '

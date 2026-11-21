@@ -59,11 +59,11 @@ function Matchup({ game }: { game: Game }) {
     </table></div>
     {game.result && <div className="prediction-result"><strong>Final: {game.away_team} {game.result.away_points} · {game.home_team} {game.result.home_points}</strong><span>{game.result.correct ? 'Correct winner' : 'Incorrect winner'}</span></div>}
     {game.model_status !== 'available' && <p className="prediction-note">{missedCutoff
-      ? `Prediction unavailable: no forecast was saved by ${time(game.cutoff_at)}, one hour before tipoff. This snapshot was saved at ${time(game.saved_at)}, after that deadline.`
+      ? `Prediction unavailable: no forecast was saved by ${time(game.cutoff_at)}, one hour before tipoff. This update was saved at ${time(game.saved_at)}, after that deadline.`
       : `Model unavailable · ${game.model_reason ?? 'No saved forecast for this game.'}`}</p>}
     {game.availability && <div className="prediction-availability">
       <p className="eyebrow">PLAYER AVAILABILITY</p>
-      <p>{game.availability.status === 'applied' ? 'Confirmed absences are included in this prediction.' : game.availability.status === 'unavailable' ? 'Injury data is unavailable. This prediction uses team results only.' : 'No additional adjustment from reported absences.'} {game.availability.coverage === 'partial' && 'Player data is incomplete.'}</p>
+      <p>{game.availability.status === 'applied' ? 'Confirmed absences are included in this prediction.' : game.availability.status === 'unavailable' ? 'Injury data is unavailable. This prediction uses team results only.' : 'Reported absences did not change this prediction.'} {game.availability.coverage === 'partial' && 'Some player stats are missing.'}</p>
       {highlights.length > 0 && <ul>{highlights.map(player => <li key={`${player.team_id}-${player.name}`}><strong>{player.name}</strong><span>{player.status} · Included in adjustment</span></li>)}</ul>}
       {players.length > 0 && <details className="prediction-player-list"><summary>View player availability ({players.length})</summary><ul>{players.map(player => <li key={`${player.team_id}-${player.name}`}><strong>{player.name}</strong><span>{player.status}</span></li>)}</ul></details>}
 
@@ -72,7 +72,7 @@ function Matchup({ game }: { game: Game }) {
     {book ? <div className="prediction-market">
       <label>Bookmaker<select value={book.bookmaker} onChange={event => setBookId(event.target.value)}>{game.bookmakers.map(row => <option key={row.bookmaker} value={row.bookmaker}>{bookName(row.bookmaker)}</option>)}</select></label>
       <p>Decimal odds: away <strong>{book.away_decimal_odds.toFixed(2)}</strong> · home <strong>{book.home_decimal_odds.toFixed(2)}</strong></p>
-      <p>Quote: {time(book.available_at)} · {game.tipoff_passed ? 'Tipoff passed' : book.stale ? 'Stale quote' : 'Saved quote'}{!book.benchmark_eligible_at_save && ' · Unavailable as a cutoff benchmark'}</p>
+      <p>Quote: {time(book.available_at)} · {game.tipoff_passed ? 'Tipoff passed' : book.stale ? 'Stale quote' : 'Saved quote'}{!book.benchmark_eligible_at_save && ' · Recorded after the comparison deadline'}</p>
     </div> : <p className="prediction-note">Bookmaker odds are unavailable.</p>}
 
   </article>
@@ -114,7 +114,7 @@ export default function PredictionsPage() {
       <section className="prediction-research" aria-labelledby="research-title">
         <div className="prediction-research-heading"><p className="eyebrow">THE MODEL / HISTORICAL EVALUATION</p><h2 id="research-title">Built from the game.</h2><p>An independent forecast using team results, opponent strength and game context.</p></div>
         <div className="prediction-metrics"><div><strong>74.9<span>%</span></strong><span>Accuracy on historical test games</span></div><div><strong>375 <span>/ 501</span></strong><span>Correct picks · Feb 1–Apr 12, 2026</span></div><div><strong>0.1786</strong><span>Brier score</span><span>Measures probability accuracy. Lower is better.</span></div></div>
-        <p className="prediction-research-context">Our model predicted 375 of 501 game winners correctly, using team performance, player availability and official pregame injury reports. Settings were chosen using earlier games. In this historical comparison, Elo reached 74.7% accuracy and a 0.1827 Brier score.</p>
+        <p className="prediction-research-context">Our model predicted 375 of 501 game winners correctly, using team performance, player availability and official pregame injury reports. Model settings were chosen using earlier games. In this historical comparison, Elo reached 74.7% accuracy and a 0.1827 Brier score.</p>
         <details className="prediction-research-details"><summary>How the model works</summary><div className="prediction-model-steps"><div><span className="eyebrow">01 / MEASURE</span><h3>Team strength</h3><p>Elo tracks wins and losses. Scoring margins and opponent-adjusted ratings measure how convincingly teams perform and who they face.</p></div><div><span className="eyebrow">02 / ADJUST</span><h3>Game context</h3><p>Home court, rest and back-to-backs help estimate the scoring margin. Recent results and longer-term strength provide different views.</p></div><div><span className="eyebrow">03 / COMBINE</span><h3>A win probability</h3><p>The model combines three estimates based on past results to predict each team’s chance of winning. Bookmaker odds are comparison data, never model inputs.</p></div></div><p>Model settings were selected using earlier games. Team ratings update with a 24-hour result delay. Official injury reports and recent player contributions adjust for confirmed absences, with smaller adjustments for long-term absences. Starting lineups are not included.</p></details>
       </section>
       <div className="prediction-view-controls" aria-label="Prediction view"><button aria-pressed={view === 'matchups'} onClick={() => { setView('matchups'); setDay(easternDate()) }}>Upcoming matchups</button><button aria-pressed={view === 'results'} onClick={() => { setView('results'); if (day >= today || day < earliestDay) setDay(offsetDate(today, -1)) }}>Past results</button></div>

@@ -11,8 +11,8 @@ probabilities alongside bookmaker odds and final results.
 - Collects news and statistics daily at 6 AM Eastern. Related coverage becomes one story with original source links.
 - Predicts game winners using team strength, opponent-adjusted scoring margins, venue, rest and confirmed player absences.
 - Refreshes predictions and injuries at 6 AM and hourly from noon through 11 PM Eastern. Bookmaker odds are comparisons, not model inputs.
-- Preserves forecast revisions in PostgreSQL and grades the latest valid prediction recorded at least one hour before tipoff.
-- Separates live results from historical research. Browse prior dates under **Predictions → Past results**.
+- Keeps each version of a forecast in PostgreSQL and scores the latest valid prediction recorded at least one hour before tipoff.
+- Separates live results from historical research. Browse the previous seven days under **Predictions → Past results**.
 - Opens an assigned GitHub issue on collection failure and closes it when the workflow recovers. Repeat failures update the same issue.
 
 ## Evaluation
@@ -23,9 +23,9 @@ evaluated on **501 games from February 1–April 12, 2026**. It correctly picked
 (74.7%), with a 0.1827 Brier score on the same games.
 
 An injury adjustment selected using earlier January games retained **375/501**
-correct picks and improved Brier to **0.1786** in a retrospective comparison.
-This reused the historical test period; it is not a new untouched evaluation.
-The live record uses actual recorded forecasts and excludes these research games.
+correct picks and improved Brier to **0.1786** in a comparison using the same historical games.
+The injury comparison reused the original test games, so it is not a separate test on unseen games.
+Backend performance totals use recorded forecasts and exclude these research games.
 See [evaluation and production details](docs/predictions.md).
 
 ## Architecture
@@ -46,7 +46,7 @@ flowchart LR
   P --> H
 ```
 
-GitHub Actions runs ingestion. FastAPI serves saved records; page loads and
+GitHub Actions collects and updates the data. FastAPI serves saved records; page loads and
 filters do not spend provider API credits. React/Vite is hosted on Vercel, the
 API on Render, and PostgreSQL on Neon. SQLite supports local development.
 No LLM calls run in the scheduled production jobs.
@@ -61,6 +61,19 @@ in browser variables or commit `.env`.
 npm --prefix frontend install
 npm --prefix frontend run dev
 ```
+
+## News investigator checks
+
+The offline runner uses 15 fictional cases to check citations, source restrictions
+and tool use. It also saves each answer and a checklist for reviewing its meaning.
+These are development checks, not model accuracy results or independent human review.
+
+```sh
+.venv/bin/python -m courtside.evals.run_news
+```
+
+Results are written to `courtside/artifacts/evals/news/`. The runner makes no
+model calls. It does not change the site or collect new articles.
 
 ## Checks
 

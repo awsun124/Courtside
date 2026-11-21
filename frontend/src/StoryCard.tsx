@@ -51,7 +51,7 @@ export default function StoryCard({ story, briefing, mode, reader }: { story: St
     try {
       const saved = await requestJson<StoryDetail>(`/api/stories/${encodeURIComponent(story.id)}?mode=${mode}&briefing_id=${briefing.briefing_id}`, { signal: request.signal })
       if (request.signal.aborted) return
-      if (saved.data_mode !== mode || saved.briefing_id !== briefing.briefing_id) throw new Error('Wrong source snapshot')
+      if (saved.data_mode !== mode || saved.briefing_id !== briefing.briefing_id) throw new Error('These sources belong to a different saved briefing.')
       setDetail(saved)
       setSourceState('ready')
     } catch {
@@ -92,7 +92,7 @@ export default function StoryCard({ story, briefing, mode, reader }: { story: St
         <p className="story-summary">{summary.text}</p>
         <div className="citation-links">{summary.citations.map(citation => <SourceLink key={citation.evidence_id} url={citation.url}>{citation.publisher}</SourceLink>)}</div>
       </> : <>
-        <p className="missing-summary">{story.investigation?.status === 'source_restricted' ? 'Headlines and source links only. A generated summary is unavailable for these sources.' : 'No summary is available yet. Original reporting is linked below.'}</p>
+        <p className="missing-summary">{story.investigation?.status === 'source_restricted' ? 'Only headlines and source links are available.' : 'No summary is available yet. Original reporting is linked below.'}</p>
         <div className="citation-links">{story.evidence_urls.map(url => <SourceLink key={url} url={url}>{sourceLabel(url)}</SourceLink>)}</div>
       </>}
       <div className="story-meta">
@@ -108,7 +108,7 @@ export default function StoryCard({ story, briefing, mode, reader }: { story: St
       {changed && <div className="changed-note"><span className="eyebrow">Since the previous briefing</span>
         <p>{newLinks || removedLinks ? `${plural(newLinks, 'new source link')}${removedLinks ? `, ${removedLinks} removed` : ''}.` : 'The source links are unchanged.'}
           {changed.score_change ? ` Score ${changed.score_change > 0 ? '+' : ''}${changed.score_change.toFixed(1)}.` : ''}
-          {' '}A substantive update has not been established.</p>
+          {' '}New links alone do not confirm a change in the story.</p>
       </div>}
 
       <div className="story-details">
@@ -126,8 +126,8 @@ export default function StoryCard({ story, briefing, mode, reader }: { story: St
         <details className="score-details">
           <summary>{story.rank ? 'Why this ranks' : 'Why this score'}<Icon name="chevron" /></summary>
           <div className="details-body">
-            <p>{plural(story.breakdown.coverage.independent_publishers, 'estimated reporting group')} from {plural(story.evidence_urls.length, 'source link')} across {plural(story.publishers.length, 'publisher label')}.</p>
-            {story.breakdown.coverage.independent_publishers < story.breakdown.coverage.target && <p className="detail-note">Limited monitored coverage: {story.breakdown.coverage.independent_publishers} of the {story.breakdown.coverage.target} reporting groups needed for full coverage points.</p>}
+            <p>{plural(story.breakdown.coverage.independent_publishers, 'estimated reporting group')} from {plural(story.evidence_urls.length, 'source link')} across {plural(story.publishers.length, 'publisher')}.</p>
+            {story.breakdown.coverage.independent_publishers < story.breakdown.coverage.target && <p className="detail-note">Coverage so far: {story.breakdown.coverage.independent_publishers} of the {story.breakdown.coverage.target} reporting groups needed for full coverage points.</p>}
             {components.map(component => <div className="score-component" key={component.label}>
               <div className="score-label"><strong>{component.label}</strong><span>{component.points.toFixed(2)} / {component.maximum.toFixed(0)}</span></div>
               <div className="score-track" role="meter" aria-label={`${component.label} score`} aria-valuenow={component.points} aria-valuemin={0} aria-valuemax={component.maximum || 1}><span style={{ width: `${component.maximum > 0 ? Math.max(0, Math.min(100, component.score * 100)) : 0}%` }} /></div>

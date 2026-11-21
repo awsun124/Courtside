@@ -2,9 +2,10 @@
 
 ## Model
 
-The model combines Elo, opponent-adjusted scoring margins, venue and rest with a
-validation-selected adjustment for confirmed player absences. In a retrospective
-February 1–April 12, 2026 evaluation, it picked 375/501 winners (74.9%), with a
+The model combines Elo, opponent-adjusted scoring margins, venue and rest.
+Confirmed player absences add an adjustment chosen using earlier games.
+In a historical comparison covering
+February 1–April 12, 2026, it picked 375/501 winners (74.9%), with a
 0.17856 Brier score. The original model scored 0.17951. The injury weight (0.25)
 was chosen on January validation. [Research details](../courtside/predictions/IMPROVED_MODEL.md).
 
@@ -50,14 +51,16 @@ python -m courtside.predictions.production
 
 `GET /api/predictions?date=YYYY-MM-DD` reads PostgreSQL by default (SQLite locally).
 The date is Eastern. The response includes recorded pregame forecasts, official
-injury notes, optional bookmaker prices, final scores and live performance.
-Missing market prices hide comparison columns. Key absences appear on cards;
-full player availability is expandable.
+injury notes, optional bookmaker prices, final scores and performance totals.
+Missing market prices hide comparison columns. Key absences appear on matchup cards;
+the full player list can be expanded.
+The page shows the previous seven days of results. Overall and monthly accuracy
+remain available in the API’s `performance` field but are not displayed on the page.
 
-The live record includes only real recorded forecasts with settled game results
+Backend performance totals include only recorded forecasts with settled game results
 from the last year, using one forecast per game. Research evaluation games are
 not imported into that record. Pending games do not count in its accuracy.
-Monthly accuracy appears once results exist. Final score corrections can update
+Monthly totals are calculated once results exist. Final score corrections can update
 settlement without changing the saved prediction.
 
 For legacy file-based previews, explicitly set `COURTSIDE_PREDICTIONS_DIR` or pass

@@ -1,11 +1,13 @@
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass
+from datetime import datetime, timedelta
 import hashlib
 import json
 import math
 import re
 import time
+from zoneinfo import ZoneInfo
 
 from scripts.validate_gdelt import canonical_url
 from .stories import clean_text
@@ -49,6 +51,55 @@ def suspicious_text(text):
     text = clean_text(text)
     return any(phrase in text for phrase in ["ignore previous instructions", "ignore all instructions",
                 "system prompt", "reveal your", "api key", "execute this", "run shell", "call this tool"])
+
+
+def availability_disagreements(retrieved, allowed_ids):
+    """Find explicit differences in reports about a player’s availability.
+
+    Compare full player names and game dates based on when each report was published.
+    If a name, date or status is missing, leave the report unassessed.
+    """
+    claims = {}
+    pattern = re.compile(r"(?P<name>[A-Z][\w’'-]+(?:\s+[A-Z][\w’'-]+){1,3})\s+"
+                         r"(?:is|was|remains|will|would|has been)\s+(?P<claim>[^.!?]+)")
+    for evidence, material in retrieved.items():
+        if evidence not in allowed_ids or material.get('quarantined'):
+            continue
+        try:
+            published = datetime.fromisoformat(material['published_at'].replace('Z', '+00:00'))
+            if published.tzinfo is None:
+                continue
+            day = published.astimezone(ZoneInfo('America/New_York')).date()
+        except (ValueError, KeyError, TypeError):
+            continue
+        # Use the fullest single saved field to avoid duplicate title/excerpt claims.
+        texts = material.get('material', {})
+        text = texts.get('excerpt') or texts.get('description') or texts.get('title') or ''
+        for match in pattern.finditer(text):
+            claim = match['claim'].lower()
+            scope = re.search(r'\b(tonight|today|tomorrow)\b', claim)
+            if not scope:
+                continue
+            game_day = day + timedelta(days=int(scope[1] == 'tomorrow'))
+            if re.match(r"(?:not (?:ruled out|out)|questionable|doubtful|(?:a )?game[- ]time decision)\b", claim):
+                status = 'uncertain'
+            elif re.match(r"(?:out|ruled out|miss)\b", claim):
+                status = 'out'
+            elif re.match(r"(?:available|cleared to play|play)\b", claim):
+                status = 'available'
+            else:
+                continue
+            key = (match['name'].casefold(), game_day.isoformat())
+            entries = claims.setdefault(key, [])
+            entry = dict(player=match['name'], evidence_id=evidence, status=status)
+            if entry not in entries:
+                entries.append(entry)
+    disagreements = []
+    for (_, day), entries in claims.items():
+        if any(a['evidence_id'] != b['evidence_id'] and a['status'] != b['status'] for a in entries for b in entries):
+            disagreements.append(dict(kind='player_availability', player=entries[0]['player'], game_date=day,
+                                      claims=entries, resolution='unresolved'))
+    return disagreements
 
 
 class EvidenceTools:
@@ -134,7 +185,7 @@ class EvidenceTools:
                             removed_source_urls=sorted(old_urls - urls),
                             publisher_group_change=current["breakdown"]["coverage"]["independent_publishers"] - old["breakdown"]["coverage"]["independent_publishers"],
                             score_change=current["score"] - old["score"], meaningful_update="not established",
-                            note="New links or scores alone do not establish a substantive development")
+                            note="New links or score changes alone do not show that the story has changed")
         return dict(status="no_previous_match", meaningful_update="not established",
                     note="No matching story found in the last three saved briefings. This does not prove the event is new.")
 
@@ -210,7 +261,7 @@ def supported_summary(claims, retrieved, allowed_ids):
     if not citations:
         return None
     return dict(kind="source_excerpts", text="\n".join(lines), citations=citations,
-                note="Attributed API excerpts, not independently verified facts")
+                note="Excerpts from the linked reports. We have not independently verified their claims.")
 
 
 def investigate_briefing(result, briefing, previous=None, settings=None, provider=None, clock=time.monotonic):
@@ -264,7 +315,7 @@ def investigate_briefing(result, briefing, previous=None, settings=None, provide
                     record["status"] = "complete" if record["summary"] else "insufficient_evidence"
                     record["activity"].append(dict(step=story_step + 1, tool="finish", status="ok",
                                                    evidence_ids=[claim["evidence_id"] for claim in arguments["claims"]],
-                                                   decision="Finished with checked evidence excerpts"))
+                                                   decision="Finished with excerpts checked against the saved sources"))
                     break
                 if name == "retrieve_material" and len(state["retrieved"]) >= settings.max_articles_per_story:
                     raise ValueError("Article retrieval limit reached")
@@ -277,7 +328,7 @@ def investigate_briefing(result, briefing, previous=None, settings=None, provide
                     state["results"][name] = tool_result
                 record["activity"].append(dict(step=story_step + 1, tool=name, arguments=arguments, status="ok",
                                                evidence_ids=[arguments["article_id"]] if name == "retrieve_material" else [],
-                                               decision="Retrieved saved excerpt" if name == "retrieve_material" else "Inspected saved metadata"))
+                                               decision="Retrieved saved excerpt" if name == "retrieve_material" else "Checked saved article details"))
                 provider.observe(action, tool_result)
             except Exception:
                 record["status"] = "unavailable"
@@ -285,7 +336,7 @@ def investigate_briefing(result, briefing, previous=None, settings=None, provide
                 if type(status) is int and 100 <= status <= 599:
                     record["provider_http_status"] = status
                 record["activity"].append(dict(step=story_step + 1, tool="rejected_action", status="rejected",
-                                               decision="Provider output or tool arguments could not be safely used"))
+                                               decision="Stopped because the provider returned an unsupported answer or tool request"))
                 break
         record["evidence_references"] = [dict(evidence_id=article_id, url=material["url"],
                                                scope=material["material_scope"], quarantined=material["quarantined"])
@@ -296,16 +347,23 @@ def investigate_briefing(result, briefing, previous=None, settings=None, provide
                          if article_id in target_ids and not material["quarantined"]}
         corroboration = sum(any(evidence_id(url) in retrieved_ids for url in group["evidence_urls"])
                             for group in candidate["reporting_groups"])
+        disagreements = availability_disagreements(state['retrieved'], set(target_ids))
+        record['conflicts'] = dict(status='detected' if disagreements else 'not_detected',
+                                   scope='Explicit player availability for the same named player and game day only',
+                                   items=disagreements)
         record["corroboration"] = dict(retrieved_reporting_groups=corroboration,
-                                       status="multiple_reporting_groups" if corroboration >= 2 else "limited")
-        record["uncertainty"] = ["Only saved API excerpts were inspected. Full articles were not retrieved."]
+                                       status='conflicting_reports' if disagreements else
+                                       "multiple_reporting_groups" if corroboration >= 2 else "limited")
+        record["uncertainty"] = ["Only saved article excerpts were checked, not the full articles."]
+        if disagreements:
+            record['uncertainty'].append('Sources disagree on player availability. The final status is still unconfirmed.')
         if corroboration < 2:
             record["uncertainty"].append("Independent corroboration is limited.")
         if candidate.get("has_rumor"):
             record["uncertainty"].append("Rumor wording appears in this story. Treat the claim as unconfirmed.")
         if related:
             record["uncertainty"].append("Related coverage shares names or teams and may describe a different event.")
-        record["decision_summary"] = f"Read {len(state['retrieved'])} excerpts. Estimated reporting groups: {corroboration}. Scores unchanged."
+        record["decision_summary"] = f"Read {len(state['retrieved'])} excerpts. Estimated reporting groups: {corroboration}. Story scores are unchanged."
         if record["summary"] and candidate.get("has_rumor"):
             record["summary"]["text"] = "Unconfirmed report. " + record["summary"]["text"]
     for candidate in briefing["candidates"] + briefing["stories"]:

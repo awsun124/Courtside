@@ -1,4 +1,4 @@
-"""Portable, data-only version of the frozen linear ensemble; no pickle loading."""
+"""Load the fixed prediction model from JSON coefficients, without pickle files."""
 
 import gzip
 import hashlib

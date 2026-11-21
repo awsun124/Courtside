@@ -10,7 +10,7 @@ export default function RankingPage() {
         <div>
           <p className="eyebrow intro-kicker"><span className="small-rule" /> THE METHOD</p>
           <h1 id="page-title">How stories are ranked<span>.</span></h1>
-          <p className="intro-copy">The reporting behind the ranking.<br />Court Side ranks the most-covered stories among the sources we monitor.</p>
+          <p className="intro-copy">How we turn news coverage into a daily briefing.</p>
         </div>
       </section>
 
@@ -26,7 +26,7 @@ export default function RankingPage() {
 
       <section className="ranking-section" aria-labelledby="weighted-score">
         <p className="eyebrow">THE SCORE / 100</p>
-        <h2 id="weighted-score">Three measures, one transparent score.</h2>
+        <h2 id="weighted-score">What makes up the score.</h2>
         <p>Each story’s “Why this ranks” panel shows its score breakdown.</p>
         <div className="ranking-components">
           <section><span className="ranking-weight">50<span>%</span></span><h3>Coverage</h3>
@@ -34,7 +34,7 @@ export default function RankingPage() {
           </section>
           <section><span className="ranking-weight">30<span>%</span></span><h3>Momentum</h3>
             <p>How quickly coverage is growing compared with the earlier part of the selected period.</p>
-            <p>Faster growth earns more points. Sparse coverage reduces them. Equal or falling rates earn zero.</p>
+            <p>Faster growth earns more points. Limited coverage reduces the points. Equal or falling rates earn zero.</p>
           </section>
           <section><span className="ranking-weight">20<span>%</span></span><h3>Freshness</h3>
             <p>How recently the story developed. Freshness points halve after 24 hours.</p>
@@ -47,19 +47,19 @@ export default function RankingPage() {
       <section className="ranking-section" aria-labelledby="example-score">
         <p className="eyebrow">AN ILLUSTRATION / NOT LIVE NEWS</p>
         <h2 id="example-score">What a score of 35 can mean.</h2>
-        <div className="ranking-example"><table><caption>Example using the default settings and a sufficient earlier comparison period</caption>
+        <div className="ranking-example"><table><caption>Example with enough earlier coverage to compare</caption>
           <thead><tr><th scope="col">Measure</th><th scope="col">Evidence</th><th scope="col">Points</th></tr></thead>
           <tbody><tr><th scope="row">Coverage</th><td>Four reporting groups</td><td>25 / 50</td></tr>
             <tr><th scope="row">Momentum</th><td>Equal recent and earlier rates</td><td>0 / 30</td></tr>
             <tr><th scope="row">Freshness</th><td>A reviewed development 24 hours old</td><td>10 / 20</td></tr></tbody>
           <tfoot><tr><th scope="row" colSpan={2}>Total score</th><td>35 / 100</td></tr></tfoot>
         </table></div>
-        <p>A score measures the downloaded coverage. It is not a probability that a claim is true or a judgment of how important the event is.</p>
+        <p>Scores measure coverage among our sources. They do not measure whether a claim is true or how important an event is.</p>
       </section>
 
       <section className="ranking-section" aria-labelledby="selection-rules">
         <p className="eyebrow">MAKING THE BRIEFING</p>
-        <h2 id="selection-rules">Up to ten, when the evidence supports it.</h2>
+        <h2 id="selection-rules">How stories make the briefing.</h2>
         <p>Stories need at least two independent reporting groups to qualify. Higher scores rank first, with coverage breaking ties.</p>
         <p>When fewer stories qualify, we show fewer than ten. Developing stories appear under “On our radar.”</p>
         <p>Scores are calculated consistently. Summaries link to the reporting, and rumors remain labeled.</p>

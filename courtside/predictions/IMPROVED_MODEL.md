@@ -1,7 +1,8 @@
 # Margin-strength model research
 
-Local research completed November 15, 2026. The live UI still uses
-`elo-current-season-reset-v1`. No deployment or default-model replacement was made.
+Research completed November 15, 2026. This document records the original
+team-based model study. The deployed model now includes player-availability
+adjustments. See [the prediction guide](../../docs/predictions.md) for current behavior.
 
 ## What was built
 

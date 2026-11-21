@@ -1,0 +1,72 @@
+{
+  "schema_version": 1,
+  "reviewer": "assistant; not independent human review",
+  "report_sha256": "aa9e65624b14a63a427c696d1b32433a61e84bc89fee9858a33d962710a323f0",
+  "dataset_sha256": "2f6b8940a4270cdba86f601bf5633bbfadddec1519ff1735439897e060448e96",
+  "code_sha256": {
+    "run_news.py": "d1a98bfd641f35f17264b4dec3e5586151990ce3011502ad088aee993e338ec3",
+    "investigation.py": "64bc4167aeaddd93a53bdf4d9a0e43ab930527eba459027086edae31949d7847",
+    "investigate.py": "4f89d45c16b70ec5b865a8a8d2f38250db272afd98a1ff0dfa474cc0924b256d"
+  },
+  "case_id": "conflicting-availability",
+  "previous_verdict": "unclear",
+  "followup_verdict": "pass",
+  "reason": "Both attributed accounts remain intact. Explicit metadata now marks the same-player, same-game-day availability disagreement as unresolved, corroboration is conflicting_reports, and uncertainty warns that neither account establishes the final status.",
+  "evidence": {
+    "summary": {
+      "kind": "source_excerpts",
+      "text": "Report A reports: A team spokesperson said Jordan Vale would miss tonight's game.\nReport B reports: A team spokesperson said Jordan Vale remains a game-time decision for tonight.",
+      "citations": [
+        {
+          "evidence_id": "article-4baa0a450a8adc9d",
+          "url": "https://report-a.example.test/nba/report",
+          "publisher": "Report A",
+          "quote": "A team spokesperson said Jordan Vale would miss tonight's game.",
+          "published_at": "2026-11-01T17:00:00Z"
+        },
+        {
+          "evidence_id": "article-20915c008d5df4c8",
+          "url": "https://report-b.example.test/nba/report",
+          "publisher": "Report B",
+          "quote": "A team spokesperson said Jordan Vale remains a game-time decision for tonight.",
+          "published_at": "2026-11-01T17:00:00Z"
+        }
+      ],
+      "note": "Attributed API excerpts, not independently verified facts"
+    },
+    "conflicts": {
+      "status": "detected",
+      "scope": "Explicit player availability for the same named player and game day only",
+      "items": [
+        {
+          "kind": "player_availability",
+          "player": "Jordan Vale",
+          "game_date": "2026-11-01",
+          "claims": [
+            {
+              "player": "Jordan Vale",
+              "evidence_id": "article-4baa0a450a8adc9d",
+              "status": "out"
+            },
+            {
+              "player": "Jordan Vale",
+              "evidence_id": "article-20915c008d5df4c8",
+              "status": "uncertain"
+            }
+          ],
+          "resolution": "unresolved"
+        }
+      ]
+    },
+    "corroboration": {
+      "retrieved_reporting_groups": 2,
+      "status": "conflicting_reports"
+    },
+    "uncertainty": [
+      "Only saved API excerpts were inspected. Full articles were not retrieved.",
+      "Sources disagree on player availability. Neither account has been established as the final status."
+    ]
+  },
+  "regression_review": "All other 14 summaries and uncertainty lists were compared against the reviewed baseline and are unchanged. The original baseline review is retained.",
+  "limits": "Synthetic development cases and a narrow rule-based availability check. This does not measure general conflict detection or LLM accuracy; no independent human review has occurred."
+}
