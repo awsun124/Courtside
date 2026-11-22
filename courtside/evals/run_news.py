@@ -82,7 +82,7 @@ def adapt_case(case):
     return result, briefing
 
 
-def grade_case(case, before, output, settings):
+def grade_case(case, before, output, settings, model_calls_allowed=False):
     story = output['candidates'][0]
     record = story.get('investigation', {})
     summary = story.get('summary')
@@ -137,7 +137,10 @@ def grade_case(case, before, output, settings):
         [(s['id'], s['rank'], s['score'], s['breakdown']) for s in output[field]] ==
         [(s['id'], s['rank'], s['score'], s['breakdown']) for s in before[field]] for field in ('stories','candidates'))
     stats = output.get('investigation', {})
-    checks['zero_model_calls_and_bounded_steps'] = stats.get('llm_calls', 0) == 0 and stats.get('steps_used',0) <= settings.max_steps
+    if model_calls_allowed:
+        checks['model_calls_and_steps_within_limits'] = 0 <= stats.get('llm_calls', 0) <= settings.max_llm_calls and stats.get('steps_used',0) <= settings.max_steps
+    else:
+        checks['zero_model_calls_and_bounded_steps'] = stats.get('llm_calls', 0) == 0 and stats.get('steps_used',0) <= settings.max_steps
     return checks
 
 

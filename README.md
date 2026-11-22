@@ -83,6 +83,21 @@ traces for 14 days. **News quality gate** fails if a test or evaluation fails.
 To block merges, make that check required in the repository’s branch rules.
 The workflow uses no API keys and makes no model calls.
 
+### Optional model comparison
+
+```sh
+.venv/bin/python -m courtside.evals.compare_model
+```
+
+This only writes a plan. It does not read provider credentials or call a model.
+A live run requires `--execute`, an enabled server provider, `--max-usd`, and
+explicit `--input-usd-per-million` and `--output-usd-per-million` prices.
+Use `--cases`, `--max-cases`, `--max-requests` and `--output-tokens` to narrow a run.
+The dollar limit uses conservative estimates at the supplied prices, not a billing
+guarantee. Failed requests keep their reservations. Reports compare the same
+cases with rules and save tool activity, time and available token usage. Meaning
+review is still required. Paid runs are excluded from CI and do not change the site.
+
 ## Checks
 
 ```sh

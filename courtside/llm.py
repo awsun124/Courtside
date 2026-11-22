@@ -73,6 +73,11 @@ class ChatProvider:
         self.url, self.settings = base_url + "/chat/completions", settings
         self.calls_made = 0
         self.last_http_status = None
+        self.token_usage = dict(prompt_tokens=0, completion_tokens=0, reported_calls=0)
+
+    def before_request(self, payload):
+        """Optional request checks used by the opt-in evaluation runner."""
+        pass
 
     def start(self, context):
         self.messages = [dict(role="system", content=SYSTEM_MESSAGE),
@@ -91,6 +96,7 @@ class ChatProvider:
                        parallel_tool_calls=False, max_completion_tokens=self.settings.max_output_tokens)
         if len(json.dumps(payload)) > self.settings.max_input_characters:
             raise ValueError("LLM input size limit reached")
+        self.before_request(payload)
         config = "\n".join(["url = " + json.dumps(self.url),
                              "header = " + json.dumps("Authorization: Bearer " + self.api_key),
                              'header = "Content-Type: application/json"',
@@ -109,7 +115,13 @@ class ChatProvider:
             self.last_http_status = int(status)
             if status != "200":
                 raise ValueError("Provider request failed")
-            message = json.loads(body)["choices"][0]["message"]
+            decoded = json.loads(body)
+            usage = decoded.get('usage') or {}
+            if all(type(usage.get(key)) is int and usage[key] >= 0 for key in ('prompt_tokens','completion_tokens')):
+                for key in ('prompt_tokens','completion_tokens'):
+                    self.token_usage[key] += usage[key]
+                self.token_usage['reported_calls'] += 1
+            message = decoded["choices"][0]["message"]
             calls = message.get("tool_calls", [])
             if len(calls) != 1:
                 raise ValueError("Expected one tool call")
