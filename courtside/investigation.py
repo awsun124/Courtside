@@ -256,7 +256,7 @@ class EvidenceTools:
 
 
 def source_excerpt(text, limit=240):
-    sentences = [match.end() for match in re.finditer(r'[.!?]["’”\']?(?=\s|$)', text[:limit + 1]) if match.end() <= limit]
+    sentences = [match.end() for match in re.finditer(r'[.!?]["’”\']?(?=\s|$)', text[:limit + 1]) if match.end() <= limit and not text[:match.end()].endswith("...")]
     if sentences:
         return text[:sentences[-1]].strip()
     if len(text) <= limit:
@@ -267,7 +267,14 @@ def source_excerpt(text, limit=240):
 
 def choose_source_excerpt(material):
     """Prefer a complete saved sentence; never supply missing words."""
-    excerpts = [source_excerpt(material[field]) for field in ('description', 'excerpt') if material.get(field)]
+    excerpts = [source_excerpt(material[field], limit=300) for field in ('description', 'excerpt') if material.get(field)]
+    # Prefer the actual result over a generic recap teaser when both are saved.
+    result_pattern = r"\b\d{2,3}[-–]\d{2,3}\b"
+    recap = re.search(r"\b(win|wins|won|beat|beats|defeat|defeats)\b", material.get('title', ''), re.I)
+    if recap:
+        for quote in excerpts:
+            if re.search(result_pattern, quote) and re.search(r'[.!?]["’”\']?$', quote):
+                return quote
     for quote in excerpts:
         if re.search(r'[.!?]["’”\']?$', quote) and not quote.endswith('...'):
             return quote

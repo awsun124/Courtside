@@ -41,6 +41,24 @@ class ExcerptSelectionTests(unittest.TestCase):
                 'title':'Raptors win'}
         self.assertEqual(choose_source_excerpt(fields),'The Raptors beat the Pistons 105-102.')
 
+    def test_game_result_is_preferred_to_generic_recap_teaser(self):
+        fields = dict(title='Harbor beats Metro in home win',
+                      description='The two rivals met after a tense pregame exchange.',
+                      excerpt='Harbor beat Metro 123-101 on Tuesday night. More details followed.')
+        self.assertIn('123-101', choose_source_excerpt(fields))
+
+    def test_complete_sentence_just_over_240_characters_is_retained(self):
+        sentence = 'Harbor beat Metro 117-85 on Tuesday night with ' + 'strong team play ' * 13 + 'throughout.'
+        self.assertGreater(len(sentence), 240)
+        self.assertLessEqual(len(sentence), 300)
+        fields = dict(title='Harbor wins 117-85', description='Harbor beat Metro on Tue', excerpt=sentence)
+        self.assertEqual(choose_source_excerpt(fields), sentence)
+
+    def test_truncation_marker_is_not_a_complete_sentence(self):
+        fields = dict(title='Harbor beats Metro', description='Harbor won at home.',
+                      excerpt='Harbor beat Metro 123-101 on Tuesday night. A second paragraph was cut... [2000 chars]')
+        self.assertEqual(choose_source_excerpt(fields), 'Harbor beat Metro 123-101 on Tuesday night.')
+
     def test_no_complete_sentence_keeps_original_fragment_with_ellipsis(self):
         fields={'description':'The Raptors beat the Pistons with a late'}
         quote=choose_source_excerpt(fields)
