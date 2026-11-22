@@ -77,6 +77,12 @@ Results are written to `courtside/artifacts/evals/news/`. The runner makes no
 model calls. It does not change the site or collect new articles. The reserved
 cases are excluded from development runs.
 
+The **News quality** workflow runs investigator tests and both development sets
+on pull requests and pushes to `main`. Each run uploads its reports and tool
+traces for 14 days. **News quality gate** fails if a test or evaluation fails.
+To block merges, make that check required in the repository’s branch rules.
+The workflow uses no API keys and makes no model calls.
+
 ## Checks
 
 ```sh

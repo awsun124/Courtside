@@ -1,0 +1,84 @@
+name: News quality
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: news-quality-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  tests:
+    name: Investigator tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+      - run: pip install -r requirements.txt
+      - run: python -m unittest tests.test_investigation
+      - run: python -m unittest discover -s courtside/evals -t .
+
+  evaluations:
+    name: Development cases (${{ matrix.suite }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - suite: original
+            cases: courtside/evals/news_cases.json
+          - suite: harder
+            cases: courtside/evals/news_cases_hard.json
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+      - run: pip install -r requirements.txt
+      - name: Check saved development cases
+        run: python -m courtside.evals.run_news --cases "${{ matrix.cases }}" --output "courtside/artifacts/evals/ci-${{ matrix.suite }}"
+      - name: Add evaluation summary
+        if: always()
+        env:
+          REPORT: courtside/artifacts/evals/ci-${{ matrix.suite }}/report.md
+        run: |
+          if [ -f "$REPORT" ]; then
+            cat "$REPORT" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "Evaluation did not produce a report. Check the failed step." >> "$GITHUB_STEP_SUMMARY"
+          fi
+      - name: Upload report and tool traces
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: news-evaluation-${{ matrix.suite }}
+          path: courtside/artifacts/evals/ci-${{ matrix.suite }}/
+          retention-days: 14
+          if-no-files-found: warn
+
+  quality:
+    name: News quality gate
+    needs: [tests, evaluations]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Require tests and both development sets to pass
+        env:
+          TEST_STATUS: ${{ needs.tests.result }}
+          EVAL_STATUS: ${{ needs.evaluations.result }}
+        run: |
+          test "$TEST_STATUS" = success
+          test "$EVAL_STATUS" = success
