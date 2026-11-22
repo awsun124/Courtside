@@ -40,6 +40,8 @@ jobs:
             cases: courtside/evals/news_cases.json
           - suite: harder
             cases: courtside/evals/news_cases_hard.json
+          - suite: saved-reporting
+            cases: courtside/evals/news_cases_real.json
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -75,7 +77,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 2
     steps:
-      - name: Require tests and both development sets to pass
+      - name: Require tests and all development sets to pass
         env:
           TEST_STATUS: ${{ needs.tests.result }}
           EVAL_STATUS: ${{ needs.evaluations.result }}

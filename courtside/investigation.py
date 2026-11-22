@@ -269,6 +269,15 @@ def source_excerpt(text, limit=240):
     return text[:cutoff if cutoff > 0 else limit].rstrip()
 
 
+def choose_source_excerpt(material):
+    """Prefer a complete saved sentence; never supply missing words."""
+    excerpts = [source_excerpt(material[field]) for field in ('description', 'excerpt') if material.get(field)]
+    for quote in excerpts:
+        if re.search(r'[.!?]["’”\']?$', quote) and not quote.endswith('...'):
+            return quote
+    return next(iter(excerpts), source_excerpt(material.get('title') or ''))
+
+
 class RulesProvider:
     name = "rules"
     uses_llm = False
@@ -292,9 +301,9 @@ class RulesProvider:
         for article_id in state["summary_ids"]:
             material = state["retrieved"].get(article_id)
             if material and not material["quarantined"]:
-                text = material["material"].get("description") or material["material"].get("title")
-                if text:
-                    claims.append(dict(evidence_id=article_id, quote=source_excerpt(text)))
+                quote = choose_source_excerpt(material['material'])
+                if quote:
+                    claims.append(dict(evidence_id=article_id, quote=quote))
             if len(claims) == 2:
                 break
         return dict(name="finish", arguments=dict(claims=claims))
@@ -306,7 +315,7 @@ class RulesProvider:
 def supported_summary(claims, retrieved, allowed_ids):
     if not isinstance(claims, list) or len(claims) > 3:
         raise ValueError("A summary can contain at most three evidence excerpts")
-    citations, lines = [], []
+    citations, lines, displayed_quotes = [], [], set()
     for claim in claims:
         if not isinstance(claim, dict) or set(claim) != {"evidence_id", "quote"}:
             raise ValueError("Summary claims must contain only an evidence ID and quote")
@@ -317,7 +326,10 @@ def supported_summary(claims, retrieved, allowed_ids):
                 not any(quote in text for text in material["material"].values())):
             raise ValueError("Summary text must come from retrieved, in-story evidence")
         ending = "" if re.search(r'[.!?…]["’”\']?$', quote) else "…"
-        lines.append(f"{material['publisher']} reports: {quote}{ending}")
+        key = ' '.join(quote.split())
+        if key not in displayed_quotes:
+            lines.append(f"{material['publisher']} reports: {quote}{ending}")
+            displayed_quotes.add(key)
         citations.append(dict(evidence_id=article_id, url=material["url"], publisher=material["publisher"],
                               quote=quote, published_at=material["published_at"]))
     if not citations:
@@ -418,7 +430,7 @@ def investigate_briefing(result, briefing, previous=None, settings=None, provide
                 replacement = assessment['replacements'].get(citation['evidence_id'])
                 if replacement:
                     material = state['retrieved'][replacement]['material']
-                    claim = dict(evidence_id=replacement, quote=source_excerpt(material.get('description') or material.get('title') or ''))
+                    claim = dict(evidence_id=replacement, quote=choose_source_excerpt(material))
                 else:
                     claim = dict(evidence_id=citation['evidence_id'], quote=citation['quote'])
                 if claim not in revised: revised.append(claim)

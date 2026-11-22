@@ -112,7 +112,12 @@ def grade_case(case, before, output, settings):
     def supported_line(line, citation):
         prefix = f"{citation.get('publisher')} reports: {citation.get('quote')}"
         return line in {prefix, prefix+'…'}
-    checks['display_matches_cited_excerpts'] = len(lines) == len(citations) and all(supported_line(line,c) for line,c in zip(lines,citations))
+    display_citations = {}
+    for citation in citations:
+        key = ' '.join(str(citation.get('quote', '')).split())
+        display_citations.setdefault(key, citation)
+    checks['display_matches_cited_excerpts'] = len(lines) == len(display_citations) and all(
+        supported_line(line,c) for line,c in zip(lines,display_citations.values()))
     checks['quarantine_expectations'] = all(
         (eid := evidence_id(a['url'])) in references and references[eid].get('quarantined') is True
         and eid not in {c.get('evidence_id') for c in citations}
@@ -159,6 +164,7 @@ def evaluate_case(case, settings_file, settings):
 
 def run_suite(cases_path=DEFAULT_CASES):
     suite = load_cases(cases_path)
+    real_reporting = suite.get('provenance', {}).get('kind') == 'saved_public_reporting'
     settings = InvestigationSettings(provider='rules')
     with tempfile.TemporaryDirectory() as folder:
         config = Path(folder)/'rules.json'
@@ -168,7 +174,8 @@ def run_suite(cases_path=DEFAULT_CASES):
     return dict(schema_version=1, created_at=datetime.now(timezone.utc).isoformat(), provider='rules',
                 dataset_sha256=hashlib.sha256(Path(cases_path).read_bytes()).hexdigest(),
                 code_sha256={p.name:hashlib.sha256(p.read_bytes()).hexdigest() for p in files}, settings=asdict(settings),
-                scope='Fictional development cases. Automatic checks cover sources and tool use, not whether each answer means the right thing. These are not results on unseen cases.',
+                report_title='Saved news reporting baseline' if real_reporting else 'News investigator development baseline',
+                scope=('Saved public reporting development cases. Labels check fidelity to saved excerpts, not independent factual truth.' if real_reporting else 'Fictional development cases.') + ' Automatic checks cover sources and tool use, not whether each answer means the right thing. These are not results on unseen cases.',
                 cases=len(results), automatic_passes=sum(r['automatic_status']=='pass' for r in results),
                 automatic_failures=sum(r['automatic_status']=='fail' for r in results),
                 semantic_reviews_pending=len(results), llm_calls=0, results=results)

@@ -64,8 +64,8 @@ npm --prefix frontend run dev
 
 ## News investigator checks
 
-The offline runner uses 15 fictional cases to check citations, source restrictions
-and tool use. It also saves each answer and a checklist for reviewing its meaning.
+The offline runner checks citations, source restrictions and tool use against
+15 original fictional cases, 12 harder cases and 6 saved-reporting cases. It also saves each answer and a checklist for reviewing its meaning.
 These are development checks, not model accuracy results or independent human review.
 
 ```sh
@@ -77,7 +77,7 @@ Results are written to `courtside/artifacts/evals/news/`. The runner makes no
 model calls. It does not change the site or collect new articles. The reserved
 cases are excluded from development runs.
 
-The **News quality** workflow runs investigator tests and both development sets
+The **News quality** workflow runs investigator tests and all three development sets
 on pull requests and pushes to `main`. Each run uploads its reports and tool
 traces for 14 days. **News quality gate** fails if a test or evaluation fails.
 To block merges, make that check required in the repository’s branch rules.

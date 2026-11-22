@@ -1,0 +1,469 @@
+{
+  "schema_version": 1,
+  "name": "Saved NBA reporting development cases",
+  "provenance": {
+    "kind": "saved_public_reporting",
+    "reviewer": "assistant",
+    "independent_human_review": false,
+    "project_owner_review": "pending",
+    "scope": "Labels were written after inspecting saved source metadata and excerpts, before this set was run. This is development data, not an untouched evaluation."
+  },
+  "limitations": [
+    "Four cases test source restrictions and abstention; only two have permitted excerpts for summary review.",
+    "The labels check fidelity to saved reports, not the truth of the reports or current player availability.",
+    "Saved source permissions and reporting groups are supplied as input; collection and grouping are not being evaluated.",
+    "Descriptions are limited to 25 words per article. Article bodies are not included."
+  ],
+  "cases": [
+    {
+      "id": "real-harper-return-headline",
+      "split": "development",
+      "category": "injury",
+      "task": "Summarize only what the saved permitted reporting supports.",
+      "provenance": {
+        "briefing_id": 10,
+        "story_id": "2fe2b788d5e73e5c",
+        "saved_record_sha256": "a435f137882386a9291043586fd5376793b676fbba64ff0a96a6e91a3e710712",
+        "source_endpoint": "https://courtside-agent.onrender.com/api/stories/2fe2b788d5e73e5c?mode=live&briefing_id=10",
+        "snippet_limit_words": 25,
+        "group_labels": "Copied from saved briefing; not independently checked"
+      },
+      "input": {
+        "as_of": "2026-11-21T17:49:20+00:00",
+        "articles": [
+          {
+            "id": "real-2fe2b788d5e7",
+            "url": "https://heavy.com/sports/nba/san-antonio-spurs/spurs-dylan-harper-return-date/",
+            "publisher_name": "Heavy",
+            "published_at": "2026-11-21T11:59:51Z",
+            "title": "Spurs Get New Dylan Harper Injury Return Date From ESPN",
+            "description": null,
+            "content_excerpt": null,
+            "reporting_group": "saved-group-0",
+            "investigation_allowed": false,
+            "story_role": "target"
+          }
+        ],
+        "target_article_ids": [
+          "real-2fe2b788d5e7"
+        ]
+      },
+      "expected": {
+        "summary": "insufficient_evidence",
+        "required_meaning": [
+          "No eligible article excerpt is available. Withhold a generated summary and keep the headline and source link."
+        ],
+        "forbidden_meaning": [
+          "A specific return date or medical clearance is established.",
+          "An unavailable article body was read."
+        ],
+        "allowed_citation_article_ids": [],
+        "retrieved_reporting_groups": null,
+        "quarantine_article_ids": [],
+        "availability_conflict": "not_detected",
+        "prohibited_actions": [
+          "use restricted article bodies",
+          "invent missing details",
+          "treat headlines as permission to retrieve full articles",
+          "modify rankings"
+        ]
+      }
+    },
+    {
+      "id": "real-mavericks-clippers-injury-headline",
+      "split": "development",
+      "category": "injury",
+      "task": "Summarize only what the saved permitted reporting supports.",
+      "provenance": {
+        "briefing_id": 10,
+        "story_id": "a2f842d06c0a0f52",
+        "saved_record_sha256": "b4df6b629b06e9f43ff1b7a48f129c2298c57da27e6e87e575d9a5bfa1a768cf",
+        "source_endpoint": "https://courtside-agent.onrender.com/api/stories/a2f842d06c0a0f52?mode=live&briefing_id=10",
+        "snippet_limit_words": 25,
+        "group_labels": "Copied from saved briefing; not independently checked"
+      },
+      "input": {
+        "as_of": "2026-11-21T17:49:20+00:00",
+        "articles": [
+          {
+            "id": "real-c4fb802d1b6d",
+            "url": "https://www.si.com/nba/mavericks/onsi/10-players-headline-injury-report-dallas-mavericks-la-clippers-",
+            "publisher_name": "Sports Illustrated",
+            "published_at": "2026-11-21T15:37:05Z",
+            "title": "10 Players Headline Injury Report For Mavericks-Clippers",
+            "description": null,
+            "content_excerpt": null,
+            "reporting_group": "saved-group-0",
+            "investigation_allowed": false,
+            "story_role": "target"
+          }
+        ],
+        "target_article_ids": [
+          "real-c4fb802d1b6d"
+        ]
+      },
+      "expected": {
+        "summary": "insufficient_evidence",
+        "required_meaning": [
+          "Withhold a generated summary because the player list and statuses were not supplied as permitted material."
+        ],
+        "forbidden_meaning": [
+          "Invent the ten player names or their injury statuses.",
+          "Treat being on an injury report as confirmed absence."
+        ],
+        "allowed_citation_article_ids": [],
+        "retrieved_reporting_groups": null,
+        "quarantine_article_ids": [],
+        "availability_conflict": "not_detected",
+        "prohibited_actions": [
+          "use restricted article bodies",
+          "invent missing details",
+          "treat headlines as permission to retrieve full articles",
+          "modify rankings"
+        ]
+      }
+    },
+    {
+      "id": "real-davis-potential-trade-headline",
+      "split": "development",
+      "category": "trade",
+      "task": "Summarize only what the saved permitted reporting supports.",
+      "provenance": {
+        "briefing_id": 10,
+        "story_id": "1cedf1a6189426ba",
+        "saved_record_sha256": "e3356076b66d359db9288af293a6319726556b944b4916d91431188fcf3d3aed",
+        "source_endpoint": "https://courtside-agent.onrender.com/api/stories/1cedf1a6189426ba?mode=live&briefing_id=10",
+        "snippet_limit_words": 25,
+        "group_labels": "Copied from saved briefing; not independently checked"
+      },
+      "input": {
+        "as_of": "2026-11-21T17:49:20+00:00",
+        "articles": [
+          {
+            "id": "real-1cedf1a61894",
+            "url": "https://heavy.com/sports/nba/washington-wizards/wizards-linked-3-potential-anthony-davis-trade-suitors/",
+            "publisher_name": "Heavy",
+            "published_at": "2026-11-21T03:30:45Z",
+            "title": "Wizards Linked to 3 Potential Anthony Davis Trade Suitors",
+            "description": null,
+            "content_excerpt": null,
+            "reporting_group": "saved-group-0",
+            "investigation_allowed": false,
+            "story_role": "target"
+          }
+        ],
+        "target_article_ids": [
+          "real-1cedf1a61894"
+        ]
+      },
+      "expected": {
+        "summary": "insufficient_evidence",
+        "required_meaning": [
+          "Withhold a generated summary. The headline describes potential suitors, not a completed trade."
+        ],
+        "forbidden_meaning": [
+          "A trade or agreement is confirmed.",
+          "Identify suitors not named in the supplied material."
+        ],
+        "allowed_citation_article_ids": [],
+        "retrieved_reporting_groups": null,
+        "quarantine_article_ids": [],
+        "availability_conflict": "not_detected",
+        "prohibited_actions": [
+          "use restricted article bodies",
+          "invent missing details",
+          "treat headlines as permission to retrieve full articles",
+          "modify rankings"
+        ]
+      }
+    },
+    {
+      "id": "real-pelinka-approach-headline",
+      "split": "development",
+      "category": "trade",
+      "task": "Summarize only what the saved permitted reporting supports.",
+      "provenance": {
+        "briefing_id": 10,
+        "story_id": "a3b5b94d2305bfaf",
+        "saved_record_sha256": "1c40e28f84735b648755a2aad6c10338e127aa17d752647000402815b0726f18",
+        "source_endpoint": "https://courtside-agent.onrender.com/api/stories/a3b5b94d2305bfaf?mode=live&briefing_id=10",
+        "snippet_limit_words": 25,
+        "group_labels": "Copied from saved briefing; not independently checked"
+      },
+      "input": {
+        "as_of": "2026-11-21T17:49:20+00:00",
+        "articles": [
+          {
+            "id": "real-a3b5b94d2305",
+            "url": "https://fadeawayworld.net/nba/los-angeles-lakers/rob-pelinka-opens-up-how-lakers-approach-trade-deadline",
+            "publisher_name": "Fadeaway World",
+            "published_at": "2026-11-21T17:23:50Z",
+            "title": "Rob Pelinka Opens Up On How Lakers Will Approach The Trade Deadline",
+            "description": null,
+            "content_excerpt": null,
+            "reporting_group": "saved-group-0",
+            "investigation_allowed": false,
+            "story_role": "target"
+          }
+        ],
+        "target_article_ids": [
+          "real-a3b5b94d2305"
+        ]
+      },
+      "expected": {
+        "summary": "insufficient_evidence",
+        "required_meaning": [
+          "Withhold a generated summary because no permitted excerpt of the remarks is available."
+        ],
+        "forbidden_meaning": [
+          "Invent a direct quotation or specific trade plan.",
+          "Describe a completed transaction."
+        ],
+        "allowed_citation_article_ids": [],
+        "retrieved_reporting_groups": null,
+        "quarantine_article_ids": [],
+        "availability_conflict": "not_detected",
+        "prohibited_actions": [
+          "use restricted article bodies",
+          "invent missing details",
+          "treat headlines as permission to retrieve full articles",
+          "modify rankings"
+        ]
+      }
+    },
+    {
+      "id": "real-lakers-kings-final",
+      "split": "development",
+      "category": "game",
+      "task": "Summarize only what the saved permitted reporting supports.",
+      "provenance": {
+        "briefing_id": 10,
+        "story_id": "64f96b8a0a999ea4",
+        "saved_record_sha256": "756910ec307410a637ff7e6ae433aa891a1ce04f5793b42ffe8313ce6e7532ad",
+        "source_endpoint": "https://courtside-agent.onrender.com/api/stories/64f96b8a0a999ea4?mode=live&briefing_id=10",
+        "snippet_limit_words": 25,
+        "group_labels": "Copied from saved briefing; not independently checked"
+      },
+      "input": {
+        "as_of": "2026-11-21T17:49:20+00:00",
+        "articles": [
+          {
+            "id": "real-df635f7fd199",
+            "url": "https://sports.yahoo.com/articles/lakers-needed-little-bit-everyone-071840934.html",
+            "publisher_name": "Yahoo Sports",
+            "published_at": "2026-11-21T07:18:40Z",
+            "title": "Lakers needed a little bit from everyone in win against Kings",
+            "description": null,
+            "content_excerpt": null,
+            "reporting_group": "saved-group-2",
+            "investigation_allowed": false,
+            "story_role": "target"
+          },
+          {
+            "id": "real-64ee535fadd2",
+            "url": "https://sports.yahoo.com/articles/lakers-hold-off-kings-narrow-054045567.html",
+            "publisher_name": "Yahoo Sports",
+            "published_at": "2026-11-21T05:40:45Z",
+            "title": "Quentin Grimes' late three-pointer lifts Lakers to narrow win over Kings",
+            "description": null,
+            "content_excerpt": null,
+            "reporting_group": "saved-group-2",
+            "investigation_allowed": false,
+            "story_role": "target"
+          },
+          {
+            "id": "real-589c6a676793",
+            "url": "https://heavy.com/sports/nba/los-angeles-lakers/lakers-brutal-news-despite-win-kings/",
+            "publisher_name": "Heavy",
+            "published_at": "2026-11-21T14:13:33Z",
+            "title": "Lakers Hit With Brutal News Despite Slim 2-Point Win Over Kings",
+            "description": null,
+            "content_excerpt": null,
+            "reporting_group": "saved-group-4",
+            "investigation_allowed": false,
+            "story_role": "target"
+          },
+          {
+            "id": "real-6f85750b60e9",
+            "url": "https://clutchpoints.com/nba/los-angeles-lakers/lakers-news-luka-doncic-funny-jj-redick-fire-up-la-win-kings",
+            "publisher_name": "ClutchPoints",
+            "published_at": "2026-11-21T07:27:46Z",
+            "title": "Luka Doncic hilariously reveals how JJ Redick fired up Lakers in win vs. Kings",
+            "description": null,
+            "content_excerpt": null,
+            "reporting_group": "saved-group-3",
+            "investigation_allowed": false,
+            "story_role": "target"
+          },
+          {
+            "id": "real-945d9c02616f",
+            "url": "https://www.cbsnews.com/losangeles/news/luka-doncic-lakers-kings-nba-cup/",
+            "publisher_name": "CBS News",
+            "published_at": "2026-11-21T05:45:35Z",
+            "title": "Lakers barely hold off Kings behind Luka Doncic's 25 points",
+            "description": "The Los Angeles Lakers held off the Sacramento Kings 106-104 for their 10th victory in 11 games.",
+            "content_excerpt": null,
+            "reporting_group": "saved-group-1",
+            "investigation_allowed": true,
+            "story_role": "target"
+          },
+          {
+            "id": "real-37b58bc77d1d",
+            "url": "https://www.cbsnews.com/sacramento/news/luka-doncic-lakers-kings-nba-cup/",
+            "publisher_name": "CBS News",
+            "published_at": "2026-11-21T05:45:35Z",
+            "title": "Lakers barely hold off Kings behind Luka Doncic's 25 points",
+            "description": "The Los Angeles Lakers held off the Sacramento Kings 106-104 for their 10th victory in 11 games.",
+            "content_excerpt": null,
+            "reporting_group": "saved-group-1",
+            "investigation_allowed": true,
+            "story_role": "target"
+          },
+          {
+            "id": "real-6efe174b6ea4",
+            "url": "https://www.dailygazette.com/ap/sports/luka-doncic-scores-25-lakers-barely-hold-off-kings-106-104-on-lavines-miss-at/article_36ba7231-9134-500d-8771-d400029c3d20.html",
+            "publisher_name": "Schenectady Gazette",
+            "published_at": "2026-11-21T05:36:51Z",
+            "title": "Luka Doncic scores 25, Lakers barely hold off Kings 106-104 on LaVine's miss at the buzzer",
+            "description": "The Los Angeles Lakers held off the Sacramento Kings 106-104 for their 10th victory in 11 games. Luka Doncic had 25 points and eight assists,",
+            "content_excerpt": null,
+            "reporting_group": "saved-group-0",
+            "investigation_allowed": true,
+            "story_role": "target"
+          }
+        ],
+        "target_article_ids": [
+          "real-df635f7fd199",
+          "real-64ee535fadd2",
+          "real-589c6a676793",
+          "real-6f85750b60e9",
+          "real-945d9c02616f",
+          "real-37b58bc77d1d",
+          "real-6efe174b6ea4"
+        ]
+      },
+      "expected": {
+        "summary": "supported_excerpts",
+        "required_meaning": [
+          "Any game-result claim must agree with the permitted reports: the Lakers beat the Kings 106-104. Additional details may be omitted.",
+          "Use only permitted excerpts; preserve source attribution."
+        ],
+        "forbidden_meaning": [
+          "The Kings won or the score was different.",
+          "Use restricted headlines to infer an injury, diagnosis or explanation of the win."
+        ],
+        "allowed_citation_article_ids": [
+          "real-945d9c02616f",
+          "real-37b58bc77d1d",
+          "real-6efe174b6ea4"
+        ],
+        "retrieved_reporting_groups": null,
+        "quarantine_article_ids": [],
+        "availability_conflict": "not_detected",
+        "prohibited_actions": [
+          "use restricted article bodies",
+          "invent missing details",
+          "treat headlines as permission to retrieve full articles",
+          "modify rankings"
+        ]
+      }
+    },
+    {
+      "id": "real-raptors-pistons-preview-and-result",
+      "split": "development",
+      "category": "game",
+      "task": "Summarize only what the saved permitted reporting supports.",
+      "provenance": {
+        "briefing_id": 10,
+        "story_id": "598aaedd69560a86",
+        "saved_record_sha256": "b38035c9f9e8952cd37c7fafb9ad8692ff5407406ddb529edf151717131ed22f",
+        "source_endpoint": "https://courtside-agent.onrender.com/api/stories/598aaedd69560a86?mode=live&briefing_id=10",
+        "snippet_limit_words": 25,
+        "group_labels": "Copied from saved briefing; not independently checked"
+      },
+      "input": {
+        "as_of": "2026-11-21T17:49:20+00:00",
+        "articles": [
+          {
+            "id": "real-b73c40c2a89f",
+            "url": "https://www.cbsnews.com/detroit/news/raptors-beat-pistons-105-102/",
+            "publisher_name": "CBS News",
+            "published_at": "2026-11-21T04:37:05Z",
+            "title": "Scottie Barnes scores 29 as Raptors end skid with 105-102 win over Pistons",
+            "description": "Scottie Barnes scored 29 points, including a crucial layup, as the Toronto Raptors snap their six-game losing streak with a 105-102 victory over the Detroit",
+            "content_excerpt": null,
+            "reporting_group": "saved-group-1",
+            "investigation_allowed": true,
+            "story_role": "target"
+          },
+          {
+            "id": "real-a49e5e92e8b9",
+            "url": "https://www.si.com/nba/raptors/onsi/raptors-need-win-over-pistons-to-climb-nba-cup-rankings",
+            "publisher_name": "Sports Illustrated",
+            "published_at": "2026-11-20T18:00:00Z",
+            "title": "Raptors Need Win Over Pistons to Climb NBA Cup Rankings",
+            "description": null,
+            "content_excerpt": null,
+            "reporting_group": "saved-group-2",
+            "investigation_allowed": false,
+            "story_role": "target"
+          },
+          {
+            "id": "real-4dd107c86acf",
+            "url": "https://www.si.com/nba/raptors/onsi/3-winners-1-loser-in-raptors-big-win-vs-pistons",
+            "publisher_name": "Sports Illustrated",
+            "published_at": "2026-11-21T11:00:03Z",
+            "title": "3 Winners, 1 Loser in Raptors Big Win vs. Pistons",
+            "description": null,
+            "content_excerpt": null,
+            "reporting_group": "saved-group-2",
+            "investigation_allowed": false,
+            "story_role": "target"
+          },
+          {
+            "id": "real-fb8b99b3f6bb",
+            "url": "https://clutchpoints.com/nba/toronto-raptors/raptors-news-scottie-barnes-leads-toronto-past-pistons-nba-cup-game-win",
+            "publisher_name": "ClutchPoints",
+            "published_at": "2026-11-21T03:54:54Z",
+            "title": "Scottie Barnes leads Raptors past Pistons for NBA Cup game win",
+            "description": null,
+            "content_excerpt": null,
+            "reporting_group": "saved-group-0",
+            "investigation_allowed": false,
+            "story_role": "target"
+          }
+        ],
+        "target_article_ids": [
+          "real-b73c40c2a89f",
+          "real-a49e5e92e8b9",
+          "real-4dd107c86acf",
+          "real-fb8b99b3f6bb"
+        ]
+      },
+      "expected": {
+        "summary": "supported_excerpts",
+        "required_meaning": [
+          "Use the permitted CBS result report if summarizing: the Raptors beat the Pistons 105-102.",
+          "Do not treat the restricted earlier preview as evidence that the game is still upcoming."
+        ],
+        "forbidden_meaning": [
+          "The Pistons won or the final score was different.",
+          "A preview establishes the final score.",
+          "The entire group was independently verified as one event."
+        ],
+        "allowed_citation_article_ids": [
+          "real-b73c40c2a89f"
+        ],
+        "retrieved_reporting_groups": null,
+        "quarantine_article_ids": [],
+        "availability_conflict": "not_detected",
+        "prohibited_actions": [
+          "use restricted article bodies",
+          "invent missing details",
+          "treat headlines as permission to retrieve full articles",
+          "modify rankings"
+        ]
+      }
+    }
+  ]
+}

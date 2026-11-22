@@ -1,0 +1,91 @@
+{
+  "schema_version": 1,
+  "dataset": "news_cases_real.json",
+  "dataset_sha256": "6e9ec67122470e2bad8ed8f672ba61237a07ae217fb8793a1f236adc127c4f50",
+  "report_sha256": "29da8188c773b8db4d46acef27b39806e5568b95bd92ec1d6893f514679a315a",
+  "code_sha256": {
+    "run_news.py": "ffc29bd92df1d0814a0464a2351d95084c764dc0927ced2891dec34eca6a40a9",
+    "investigation.py": "b68c113ab53402c71261f77e4452fd600bf21fbe24d8af280a485d3aed62f8dd",
+    "investigate.py": "733a959c148b4fd746c2be0902b51305dea62d8cd8a370f774fde173266e0fbf"
+  },
+  "reviewer": "assistant; not an independent human",
+  "automatic_passes": 6,
+  "assistant_meaning_passes": 6,
+  "project_owner_review": "pending",
+  "model_calls": 0,
+  "composition": {
+    "restricted_headline_cases": 4,
+    "permitted_excerpt_cases": 2
+  },
+  "scope": "Development-case fidelity to saved public reporting, not independent factual verification, held-out accuracy or proof of general reliability.",
+  "limitations": [
+    "Only two cases have usable excerpts. Four test whether the investigator withholds a summary when sources are restricted.",
+    "Reporting-group labels and source permissions come from the saved briefing. Their accuracy was not independently tested.",
+    "Descriptions are limited to 25 words per article; no article bodies are included."
+  ],
+  "quality_findings": [
+    {
+      "case_id": "real-lakers-kings-final",
+      "issue": "Repeated excerpts from different publishers may reflect a shared wire report. The current supplied groups do not establish independent corroboration."
+    },
+    {
+      "case_id": "real-raptors-pistons-preview-and-result",
+      "issue": "A snippet ends mid-sentence. Prefer complete supported sentences when available, and do not invent missing words."
+    }
+  ],
+  "reviews": [
+    {
+      "id": "real-harper-return-headline",
+      "verdict": "pass",
+      "reason": "No summary was generated from the restricted headline. No return date or medical clearance was invented."
+    },
+    {
+      "id": "real-mavericks-clippers-injury-headline",
+      "verdict": "pass",
+      "reason": "No summary or list of player statuses was invented from the restricted headline."
+    },
+    {
+      "id": "real-davis-potential-trade-headline",
+      "verdict": "pass",
+      "reason": "No completed trade or unnamed suitors were inferred. Restricted material stayed out of the investigator."
+    },
+    {
+      "id": "real-pelinka-approach-headline",
+      "verdict": "pass",
+      "reason": "No statement, direct quote or trade plan was invented without a permitted excerpt."
+    },
+    {
+      "id": "real-lakers-kings-final",
+      "verdict": "pass",
+      "reason": "Both cited excerpts preserve the reported Lakers win and 106-104 score. Restricted headlines were excluded. The summary repeats identical wording, which is a quality concern rather than a false claim."
+    },
+    {
+      "id": "real-raptors-pistons-preview-and-result",
+      "verdict": "pass",
+      "reason": "The permitted CBS excerpt preserves the reported Raptors win and 105-102 score. The restricted preview is not used as result evidence. The excerpt ends mid-sentence, so readability needs improvement."
+    }
+  ],
+  "excerpt_selection_followup": {
+    "dataset_sha256": "6e9ec67122470e2bad8ed8f672ba61237a07ae217fb8793a1f236adc127c4f50",
+    "code_sha256": {
+      "run_news.py": "41c0de8a026e85a28a5ffdd551291bda14243cf44e70f439e968c95b3772256a",
+      "investigation.py": "8d22096742718c9d30081ef232d33ab6a2c539406dfd596b2af08125e17be19d",
+      "investigate.py": "733a959c148b4fd746c2be0902b51305dea62d8cd8a370f774fde173266e0fbf"
+    },
+    "automatic_passes": 6,
+    "model_calls": 0,
+    "reviewed_changes": [
+      {
+        "case_id": "real-lakers-kings-final",
+        "displayed_excerpts": 1,
+        "retained_citations": 2,
+        "note": "Identical wording appears once. Both source links remain, and each citation is still validated."
+      },
+      {
+        "case_id": "real-raptors-pistons-preview-and-result",
+        "note": "The saved input contains no complete body sentence. The fragment still ends with an ellipsis; missing words were not invented."
+      }
+    ],
+    "scope": "Inputs and expected answers were unchanged. This improves display, not reporting-group independence or factual accuracy."
+  }
+}
