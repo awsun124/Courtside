@@ -83,6 +83,28 @@ traces for 14 days. **News quality gate** fails if a test or evaluation fails.
 To block merges, make that check required in the repository’s branch rules.
 The workflow uses no API keys and makes no model calls.
 
+### Review saved live briefings
+
+```sh
+.venv/bin/python -m courtside.evals.production collect --limit 7
+.venv/bin/python -m courtside.evals.production show artifacts/evals/production/briefing-ID.json --story STORY_ID
+```
+
+This reads saved live records without fetching news. Private reports stay in the
+ignored `artifacts/evals/production` folder. Automatic checks cover citations,
+source restrictions and tool limits. Passing them does not establish factual
+accuracy. Summary and restricted-story counts show how much was actually checked.
+Existing reports are preserved. Future investigations save code hashes and timing;
+older records have no verified code version.
+
+Use `review --help` to record your verdict, name and notes in a separate review
+file. For a failed case, also provide `--summary`, `--required-meaning` and
+`--forbidden-meaning`. Then run `export-case REVIEW_FILE --output CASE_FILE` and
+`.venv/bin/python -m courtside.evals.run_news --cases CASE_FILE` to reproduce it.
+Review source permissions before committing any exported material. These are
+new development cases, not untouched evaluation data. Collection runs locally
+when you invoke the command; it is not a scheduled quality monitor.
+
 ## Checks
 
 ```sh

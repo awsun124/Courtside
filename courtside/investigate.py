@@ -1,5 +1,7 @@
 import argparse
 import json
+import hashlib
+import time
 from pathlib import Path
 
 from .investigation import InvestigationSettings, investigate_briefing, publication_time
@@ -9,7 +11,7 @@ from .storage import initialize_database, read_briefings, read_run
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
 
-def add_investigations(result, briefing, previous, settings_file=None, env_file=None):
+def _add_investigations(result, briefing, previous, settings_file=None, env_file=None):
     blocked_urls = {canonical_url(article["url"]) for article in result["articles"]
                     if article.get("investigation_allowed") is False}
     if blocked_urls:
@@ -88,6 +90,15 @@ def add_investigations(result, briefing, previous, settings_file=None, env_file=
             candidate["investigation"] = dict(status="unavailable", activity=[], summary=None,
                                               decision_summary="Investigation unavailable. Review the original sources.")
         return briefing
+
+
+def add_investigations(result, briefing, previous, settings_file=None, env_file=None):
+    started = time.perf_counter()
+    reviewed = _add_investigations(result, briefing, previous, settings_file, env_file)
+    reviewed["investigation"]["code_version"] = {name: hashlib.sha256((Path(__file__).parent / name).read_bytes()).hexdigest()
+        for name in ("investigation.py", "investigate.py")}
+    reviewed["investigation"]["elapsed_seconds"] = time.perf_counter() - started
+    return reviewed
 
 
 def write_report(briefing, output):
