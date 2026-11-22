@@ -1,14 +1,15 @@
 # Court Side
 
 An automated NBA briefing, stats dashboard and independent game prediction system.
-Groups news into distinct stories, ranks the coverage, and records pregame win
-probabilities alongside bookmaker odds and final results.
+Groups news into distinct stories, checks supporting excerpts, and records
+pregame win probabilities alongside bookmaker odds and final results.
 
 **[Deployed site](https://courtside-agent.vercel.app)** · [Setup](docs/setup.md) · [Model & evaluation](docs/predictions.md)
 
 ## What it does
 
 - Collects news and statistics daily at 6 AM Eastern. Related coverage becomes one story with original source links.
+- Checks permitted news excerpts against their citations, flags conflicting player-availability reports and excludes suspicious source instructions. The investigator uses local rules with fixed tool, time and retrieval limits.
 - Predicts game winners using team strength, opponent-adjusted scoring margins, venue, rest and confirmed player absences.
 - Refreshes predictions and injuries at 6 AM and hourly from noon through 11 PM Eastern. Bookmaker odds are comparisons, not model inputs.
 - Keeps each version of a forecast in PostgreSQL and scores the latest valid prediction recorded at least one hour before tipoff.
@@ -30,21 +31,7 @@ See [evaluation and production details](docs/predictions.md).
 
 ## Architecture
 
-```mermaid
-flowchart LR
-  N[News feeds] --> C[Daily collection]
-  S[NBA / ESPN stats] --> C
-  C --> DB[(PostgreSQL)]
-  G[Schedules and results] --> P[Prediction worker]
-  I[Official injury reports] --> P
-  O[Bookmaker odds] --> P
-  M[Frozen independent model] --> P
-  P --> DB
-  DB --> A[FastAPI]
-  A --> UI[React / TypeScript]
-  C --> H[GitHub failure alerts]
-  P --> H
-```
+![Court Side architecture: scheduled news and prediction workers save records in PostgreSQL, FastAPI serves React, and local reviews produce regression cases checked in CI.](docs/assets/architecture.svg)
 
 GitHub Actions collects and updates the data. FastAPI serves saved records; page loads and
 filters do not spend provider API credits. React/Vite is hosted on Vercel, the
@@ -74,8 +61,9 @@ These are development checks, not model accuracy results or independent human re
 ```
 
 Results are written to `courtside/artifacts/evals/news/`. The runner makes no
-model calls. It does not change the site or collect new articles. The reserved
-cases are excluded from development runs.
+model calls. It does not change the site or collect new articles. The eight
+previously reserved cases have already been evaluated and are excluded from
+these development runs.
 
 The **News quality** workflow runs investigator tests and all three development sets
 on pull requests and pushes to `main`. Each run uploads its reports and tool
@@ -105,9 +93,18 @@ Review source permissions before committing any exported material. These are
 new development cases, not untouched evaluation data. Collection runs locally
 when you invoke the command; it is not a scheduled quality monitor.
 
+### From review to regression test
+
+An assistant review of five saved stories found a recap that omitted an available
+game result and another that cut off a sentence. The current investigator selects
+the saved result and complete sentences. Regression tests cover both cases and
+truncation markers. These reviews checked saved-source support and readability,
+not independent factual accuracy.
+
 ## Checks
 
 ```sh
+.venv/bin/python -m unittest discover -s tests
 .venv/bin/python -m unittest discover -s courtside -t .
 npm --prefix frontend test
 npm --prefix frontend run build

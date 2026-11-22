@@ -18,10 +18,31 @@ not call news or stats providers.
 The investigator can search saved articles, retrieve allowed excerpts, inspect
 related groups, and compare previous briefings. Limits live in
 config/investigation.json. Tool calls, citations, and short decisions are saved.
-Article text is treated as source material, never as instructions. Headline-only sources are excluded from model
-input. Summaries must quote retrieved evidence.
+Article text is treated as source material, never as instructions. Sources
+restricted to headline attribution are excluded from investigation input. Summaries must quote retrieved evidence. The rules-based investigator checks for
+conflicting player-availability reports and explicit corrections. Suspicious
+instructions are quarantined. These checks cannot establish that a source is true.
 
-# Data limits
+## Evaluation and operations
+
+GitHub Actions runs news and stats collection daily, and refreshes predictions,
+injuries and results on their own schedule. Both jobs save to PostgreSQL and open
+or update a GitHub issue on failure. FastAPI serves those saved records; the
+frontend does not call the providers directly. Bookmaker odds are stored for
+comparison and never used as inputs to the independent prediction model.
+
+The news quality workflow runs investigator tests and 33 development cases on
+pull requests and pushes to main. It uploads reports for 14 days. The quality
+check must be configured as required in branch rules to block merges.
+
+`courtside/evals/production.py` reads saved live records on demand. It checks
+citations and tool limits, writes private local reports and records reviewer
+verdicts separately. Reviewed failures can become development regression cases.
+It does not fetch news or run on a schedule. Reports stay in the ignored artifacts
+folder. New investigations record code hashes and elapsed time; old records may
+lack that provenance.
+
+## Data limits
 
 GDELT validation returned rate limits and timeouts, so the app uses other
 sources. Free GNews access is

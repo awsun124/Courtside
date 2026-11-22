@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="600" viewBox="0 0 1080 600" role="img" aria-labelledby="title desc">
+<title id="title">Court Side architecture</title>
+<desc id="desc">Scheduled workers store news, statistics and predictions in PostgreSQL. FastAPI serves React. A local review command reads saved evidence and exports reviewed regression cases for offline CI checks.</desc>
+<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10" fill="none" stroke="#596579" stroke-width="1.5"/></marker></defs>
+<rect width="1080" height="600" rx="16" fill="#f8fafc"/>
+<g font-family="Arial, Helvetica, sans-serif" fill="#172235">
+<text x="30" y="35" font-size="20" font-weight="bold" fill="#172235">COURT SIDE</text>
+<text x="30" y="65" font-size="16" font-weight="normal" fill="#172235">Scheduled collection, saved evidence and independent predictions</text>
+<rect x="30" y="95" width="360" height="120" rx="10" fill="#ffffff" stroke="#cbd5e1"/>
+<text x="48" y="124" font-size="17" font-weight="bold" fill="#172235">News + statistics</text>
+<text x="48" y="150" font-size="14" font-weight="normal" fill="#172235">Feeds → event grouping → ranking</text>
+<text x="48" y="171" font-size="14" font-weight="normal" fill="#172235">Rules-based excerpt checks + citations</text>
+<text x="48" y="192" font-size="14" font-weight="normal" fill="#172235">NBA.com player stats / ESPN team records</text>
+<rect x="30" y="240" width="360" height="125" rx="10" fill="#ffffff" stroke="#cbd5e1"/>
+<text x="48" y="269" font-size="17" font-weight="bold" fill="#172235">Independent predictions</text>
+<text x="48" y="295" font-size="14" font-weight="normal" fill="#172235">Team results + rest + player availability</text>
+<text x="48" y="316" font-size="14" font-weight="normal" fill="#172235">Official injuries, schedules and final scores</text>
+<text x="48" y="337" font-size="14" font-weight="normal" fill="#172235">Bookmaker odds saved for comparison</text>
+<rect x="450" y="165" width="225" height="110" rx="10" fill="#edf4ff" stroke="#cbd5e1"/>
+<text x="468" y="194" font-size="17" font-weight="bold" fill="#172235">PostgreSQL · Neon</text>
+<text x="468" y="220" font-size="14" font-weight="normal" fill="#172235">News, stats and forecasts</text>
+<text x="468" y="241" font-size="14" font-weight="normal" fill="#172235">Evidence + tool decisions</text>
+<rect x="735" y="165" width="310" height="110" rx="10" fill="#ffffff" stroke="#cbd5e1"/>
+<text x="753" y="194" font-size="17" font-weight="bold" fill="#172235">FastAPI → React</text>
+<text x="753" y="220" font-size="14" font-weight="normal" fill="#172235">API on Render · UI on Vercel</text>
+<text x="753" y="241" font-size="14" font-weight="normal" fill="#172235">Pages read saved records</text>
+<path d="M390 155 H420 V198 H450" fill="none" stroke="#596579" stroke-width="1.7" marker-end="url(#arrow)"/>
+<path d="M390 300 H420 V245 H450" fill="none" stroke="#596579" stroke-width="1.7" marker-end="url(#arrow)"/>
+<path d="M675 220 H735" fill="none" stroke="#596579" stroke-width="1.7" marker-end="url(#arrow)"/>
+<text x="30" y="399" font-size="13" font-weight="bold" fill="#536276">GITHUB ACTIONS</text>
+<text x="30" y="423" font-size="15" font-weight="normal" fill="#172235">Scheduled workers · failure issues · recovery notifications</text>
+<rect x="450" y="335" width="225" height="110" rx="10" fill="#ffffff" stroke="#cbd5e1"/>
+<text x="468" y="364" font-size="17" font-weight="bold" fill="#172235">Private local review</text>
+<text x="468" y="390" font-size="14" font-weight="normal" fill="#172235">Read saved live evidence</text>
+<text x="468" y="411" font-size="14" font-weight="normal" fill="#172235">Record reviewer verdicts</text>
+<path d="M563 275 V335" fill="none" stroke="#596579" stroke-width="1.7" marker-end="url(#arrow)"/>
+<rect x="735" y="335" width="310" height="110" rx="10" fill="#ffffff" stroke="#cbd5e1"/>
+<text x="753" y="364" font-size="17" font-weight="bold" fill="#172235">Regression cases → CI</text>
+<text x="753" y="390" font-size="14" font-weight="normal" fill="#172235">Investigator tests + 33 dev cases</text>
+<text x="753" y="411" font-size="14" font-weight="normal" fill="#172235">Reports retained for 14 days</text>
+<path d="M675 390 H735" fill="none" stroke="#596579" stroke-width="1.7" marker-end="url(#arrow)"/>
+<text x="450" y="477" font-size="14" font-weight="normal" fill="#172235">Review runs on demand; no paid model API.</text>
+<path d="M30 510 H1045" stroke="#cbd5e1"/>
+<text x="30" y="542" font-size="15" font-weight="normal" fill="#172235">Odds do not feed the prediction model. Page loads do not spend provider credits.</text>
+<text x="30" y="570" font-size="14" font-weight="normal" fill="#536276">SQLite supports local development. Passing checks is not a factual-accuracy claim.</text>
+</g></svg>
