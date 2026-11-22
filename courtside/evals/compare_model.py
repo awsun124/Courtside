@@ -17,6 +17,7 @@ import time
 from unittest.mock import patch
 
 from .run_news import DEFAULT_CASES,adapt_case,evaluate_case,grade_case,load_cases
+from .rubrics import verify_rubrics
 from ..investigate import add_investigations
 from ..investigation import InvestigationSettings
 from ..llm import ChatProvider
@@ -79,9 +80,10 @@ def compare(cases_path=DEFAULT_CASES,*,execute=False,max_cases=3,max_requests=15
     price_in,price_out,ceiling=amount(input_rate),amount(output_rate),amount(max_usd)
     if execute and (not ceiling or not price_in or not price_out):
         raise ValueError('Execution requires a positive budget and explicit input/output prices per million tokens')
+    rubric_version=verify_rubrics(cases_path) if execute else dict(status='not_checked_in_dry_run')
     settings=InvestigationSettings(max_stories=1,max_llm_calls=5,max_output_tokens=output_tokens,max_seconds=30)
     report=dict(mode='execute' if execute else 'dry_run',provider='configured openai-compatible provider',
-        dataset=Path(cases_path).name,dataset_sha256=hashlib.sha256(Path(cases_path).read_bytes()).hexdigest(),
+        rubrics=rubric_version,dataset=Path(cases_path).name,dataset_sha256=hashlib.sha256(Path(cases_path).read_bytes()).hexdigest(),
         code_sha256={name:hashlib.sha256((ROOT/name).read_bytes()).hexdigest() for name in
                      ('courtside/llm.py','courtside/investigate.py','courtside/investigation.py','courtside/evals/run_news.py','courtside/evals/compare_model.py')},
         settings=asdict(settings),case_ids=[c['id'] for c in cases],

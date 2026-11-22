@@ -96,7 +96,8 @@ Use `--cases`, `--max-cases`, `--max-requests` and `--output-tokens` to narrow a
 The dollar limit uses conservative estimates at the supplied prices, not a billing
 guarantee. Failed requests keep their reservations. Reports compare the same
 cases with rules and save tool activity, time and available token usage. Meaning
-review is still required. Paid runs are excluded from CI and do not change the site.
+review is still required. Live runs also verify `courtside/evals/rubric_freeze.json`;
+changed expectations or grading code need a new review before comparison. Paid runs are excluded from CI and do not change the site.
 
 ## Checks
 

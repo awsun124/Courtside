@@ -107,6 +107,17 @@ def grade_case(case, before, output, settings, model_calls_allowed=False):
             and isinstance(citation.get('quote'), str) and 5 <= len(citation['quote']) <= 300
             and any(citation['quote'] in short_text(article.get(field)) for field in ('title','description','content_excerpt')))
     checks['citations_retrieved_permitted_and_supported'] = all(valid_citation(c) for c in citations)
+    def source_time(value):
+        if not isinstance(value,str): return None
+        try:
+            parsed=datetime.fromisoformat(value.replace('Z','+00:00'))
+            return parsed if parsed.tzinfo is not None else None
+        except ValueError: return None
+    checks['citation_dates_match_sources'] = all(
+        citation.get('evidence_id') in articles and
+        (source_time(citation.get('published_at')) == source_time(articles[citation['evidence_id']].get('published_at')))
+        and (source_time(citation.get('published_at')) is not None or citation.get('published_at') is None)
+        for citation in citations)
     # Verify the displayed summary actually consists of its validated citations.
     lines = (summary or {}).get('text', '').removeprefix('Unconfirmed report. ').splitlines()
     def supported_line(line, citation):
@@ -119,12 +130,18 @@ def grade_case(case, before, output, settings, model_calls_allowed=False):
     checks['display_matches_cited_excerpts'] = len(lines) == len(display_citations) and all(
         supported_line(line,c) for line,c in zip(lines,display_citations.values()))
     checks['quarantine_expectations'] = all(
-        (eid := evidence_id(a['url'])) in references and references[eid].get('quarantined') is True
-        and eid not in {c.get('evidence_id') for c in citations}
+        (eid := evidence_id(a['url'])) not in {c.get('evidence_id') for c in citations}
+        and (eid not in retrieved or eid in references and references[eid].get('quarantined') is True)
         for a in articles.values() if a['id'] in expected['quarantine_article_ids'])
     checks['restricted_sources_not_retrieved'] = all(a['investigation_allowed'] for eid,a in articles.items() if eid in retrieved)
     count = expected['retrieved_reporting_groups']
-    checks['reporting_group_count'] = count is None or record.get('corroboration', {}).get('retrieved_reporting_groups', 0) == count
+    eligible = {eid for eid,a in articles.items() if a['id'] in case['input']['target_article_ids']
+                and a['investigation_allowed'] and a['id'] not in expected['quarantine_article_ids']}
+    usable = {eid for eid in retrieved & eligible if eid in references and not references[eid].get('quarantined')}
+    actual_groups = {articles[eid]['reporting_group'] for eid in usable}
+    reported_count = record.get('corroboration', {}).get('retrieved_reporting_groups', 0)
+    checks['reporting_group_count'] = reported_count == len(actual_groups) and (
+        count is None or not eligible <= retrieved or reported_count == count)
     expected_conflict = expected.get('availability_conflict')
     if expected_conflict:
         checks['availability_conflict_signal'] = record.get('conflicts', {}).get('status', 'not_detected') == expected_conflict
