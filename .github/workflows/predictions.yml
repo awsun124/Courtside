@@ -22,8 +22,6 @@ jobs:
     env:
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
       ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
-      ENABLE_LLM_CALLS: 'false'
-      ENABLE_SAMPLE_AI: 'false'
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5

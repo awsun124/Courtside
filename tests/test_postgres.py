@@ -10,8 +10,7 @@ from unittest.mock import patch
 
 from courtside.database import connect, database_setting, is_postgres, migrate_database
 from courtside.service import NewsService
-from courtside.storage import (finish_sample_agent, read_briefings, read_refreshes,
-                               start_refresh, start_sample_agent)
+from courtside.storage import read_briefings, read_refreshes, start_refresh
 from courtside.schedule import collect_daily
 from courtside.stats import read_stats, save_stats
 
@@ -67,15 +66,12 @@ class PostgresTests(unittest.TestCase):
         self.assertEqual(sum(results), 1)
         service.refresh.assert_called_once()
 
-    def test_refresh_lock_and_sample_agent_lease(self):
+    def test_refresh_lock(self):
         now = datetime(2032, 1, 1, 14, tzinfo=timezone.utc)
         with ThreadPoolExecutor(max_workers=2) as pool:
             results = list(pool.map(lambda _: start_refresh(self.database, 'live', now, 1), range(2)))
         self.assertEqual(sum('id' in result for result in results), 1)
         self.assertEqual(sum(result.get('status_code') == 409 for result in results), 1)
-        job = start_sample_agent(self.database, now)
-        self.assertIn('id', job)
-        finish_sample_agent(self.database, job['id'], now, 'complete', 1, result={'checked': True})
 
     def test_transaction_rolls_back_on_failure(self):
         with self.assertRaises(sqlite3.Error):

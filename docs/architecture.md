@@ -9,7 +9,7 @@ not call news or stats providers.
 
 - courtside/sources.py combines GNews, enabled RSS feeds, and FreeNewsApi.ai.
 - courtside/stories.py filters articles and groups reports about the same event.
-- courtside/ranking.py calculates scores. The LLM cannot change them.
+- courtside/ranking.py calculates scores. The investigator cannot change them.
 - courtside/investigation.py checks story excerpts within fixed time and tool-call limits.
 - courtside/storage.py and schema.sql store articles, groups, briefings, and logs.
 - courtside/schedule.py runs the shared daily collection.

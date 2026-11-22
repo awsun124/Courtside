@@ -21,16 +21,12 @@ class InvestigationSettings:
     max_steps_per_story: int = 8
     max_seconds: float = 15
     max_articles_per_story: int = 6
-    max_llm_calls: int = 3
-    max_input_characters: int = 16000
-    max_output_tokens: int = 1000
 
     def validate(self):
-        if self.provider not in {"rules", "openai-compatible"}:
-            raise ValueError("Unknown investigation provider")
+        if self.provider != "rules":
+            raise ValueError("Only the rules-based investigator is supported")
         limits = {"max_stories": 10, "max_steps": 100, "max_steps_per_story": 12,
-                  "max_articles_per_story": 8, "max_llm_calls": 5,
-                  "max_input_characters": 32000, "max_output_tokens": 2000}
+                  "max_articles_per_story": 8}
         for name, maximum in limits.items():
             value = getattr(self, name)
             if type(value) is not int or not 1 <= value <= maximum:
@@ -280,7 +276,6 @@ def choose_source_excerpt(material):
 
 class RulesProvider:
     name = "rules"
-    uses_llm = False
 
     def start(self, context):
         pass
@@ -342,12 +337,10 @@ def investigate_briefing(result, briefing, previous=None, settings=None, provide
     settings = settings or InvestigationSettings()
     settings.validate()
     if provider is None:
-        if settings.provider != "rules":
-            raise ValueError("The configured LLM provider has not been enabled")
         provider = RulesProvider()
     tools = EvidenceTools(result, briefing, previous or [])
     started_at = clock()
-    deadline, steps, llm_calls = started_at + settings.max_seconds, 0, 0
+    deadline, steps = started_at + settings.max_seconds, 0
     records = {}
     for position, candidate in enumerate(briefing["candidates"]):
         story_id = candidate["id"]
@@ -370,12 +363,7 @@ def investigate_briefing(result, briefing, previous=None, settings=None, provide
         for story_step in range(settings.max_steps_per_story):
             if steps >= settings.max_steps or clock() >= deadline:
                 break
-            if provider.uses_llm:
-                if llm_calls >= settings.max_llm_calls:
-                    break
-                llm_calls += 1
             state["steps_left"] = min(settings.max_steps_per_story - story_step, settings.max_steps - steps)
-            state["calls_left"] = settings.max_llm_calls - llm_calls + 1 if provider.uses_llm else None
             try:
                 action = provider.choose(state, max(0.01, deadline - clock()))
                 if clock() >= deadline:
@@ -406,9 +394,6 @@ def investigate_briefing(result, briefing, previous=None, settings=None, provide
                 provider.observe(action, tool_result)
             except Exception:
                 record["status"] = "unavailable"
-                status = getattr(provider, "last_http_status", None)
-                if type(status) is int and 100 <= status <= 599:
-                    record["provider_http_status"] = status
                 record["activity"].append(dict(step=story_step + 1, tool="rejected_action", status="rejected",
                                                decision="Stopped because the provider returned an unsupported answer or tool request"))
                 break
@@ -474,6 +459,6 @@ def investigate_briefing(result, briefing, previous=None, settings=None, provide
         candidate["what_changed"] = records[candidate["id"]]["what_changed"]
     briefing["investigation"] = dict(provider=provider.name, status="complete" if all(record["status"] in {"complete", "insufficient_evidence"} for record in records.values()) else "partial",
                                      limits=asdict(settings), steps_used=steps,
-                                     llm_calls=getattr(provider, "calls_made", llm_calls), provider_attempts=llm_calls,
+                                     llm_calls=0,
                                      elapsed_seconds=max(0, clock() - started_at))
     return briefing

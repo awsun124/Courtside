@@ -43,8 +43,6 @@ DATABASE_URL=your-pooled-Neon-connection-string
 COURTSIDE_ALLOWED_ORIGINS=https://your-site.vercel.app
 COURTSIDE_PUBLIC_READ_ONLY=true
 COURTSIDE_EXTERNAL_SCHEDULE=true
-ENABLE_LLM_CALLS=false
-ENABLE_SAMPLE_AI=false
 ```
 
 Render serves saved results. It needs no news-provider or LLM keys. Free services
@@ -61,7 +59,7 @@ the Actions tab. GitHub may delay scheduled runs and disables public-repository
 schedules after 60 days without activity. Check the workflow occasionally.
 Daily database claims prevent duplicate collection, including manual reruns.
 Failed attempts retain previous results and do not retry providers that day.
-LLM calls are disabled. No credentials are stored in the workflow file.
+Investigation uses local rules. No credentials are stored in the workflow file.
 
 ## Vercel
 

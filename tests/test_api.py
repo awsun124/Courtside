@@ -12,7 +12,6 @@ from unittest.mock import patch
 import httpx
 
 from courtside.api import create_app
-from courtside.investigation import RulesProvider
 from courtside.sample_data import sample_report
 from courtside.service import NewsService
 from courtside.storage import finish_refresh, start_refresh
@@ -49,6 +48,11 @@ class ApiTests(unittest.IsolatedAsyncioTestCase):
 
     async def refresh(self, **changes):
         return await self.client.post("/api/refresh", json={"mode": "live", "days": 3, "max_requests": 1, **changes})
+
+    async def test_removed_model_demo_is_not_available(self):
+        response = await self.client.post("/api/sample/investigate", json={})
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(self.calls, 0)
 
     async def test_health_and_empty_state_do_not_call_source(self):
         self.assertEqual((await self.client.get("/health")).json(), {"status": "ok"})
@@ -87,38 +91,7 @@ class ApiTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual((await self.client.get(f"/api/stories/{story_id}")).status_code, 404)
         self.assertEqual((await self.client.get(f"/api/stories/{story_id}?mode=sample")).status_code, 200)
 
-    async def test_sample_ai_requires_its_own_opt_in(self):
-        self.env_file.write_text("ENABLE_LLM_CALLS=true\nLLM_API_KEY=fake-key\nLLM_MODEL=test-model\n")
-        with patch.dict("os.environ", {}, clear=True), patch("subprocess.run") as network:
-            response = await self.client.post("/api/sample/investigate", json={})
-        self.assertEqual(response.status_code, 503)
-        network.assert_not_called()
-        self.assertIsNone((await self.client.get("/api/briefings/latest?mode=sample")).json()["briefing"])
 
-    async def test_sample_ai_only_accepts_server_created_fictional_evidence(self):
-        self.env_file.write_text("ENABLE_SAMPLE_AI=true\nLLM_API_KEY=fake-key\nLLM_MODEL=test-model\n")
-        forbidden = await self.client.post("/api/sample/investigate", json={"mode": "live"})
-        self.assertEqual(forbidden.status_code, 422)
-        provider = RulesProvider()
-        provider.model = "test-model"
-        provider.calls_made = 2
-        with patch("courtside.api.ChatProvider", return_value=provider):
-            response = await self.client.post("/api/sample/investigate", json={})
-        self.assertEqual(response.status_code, 200, response.text)
-        result = response.json()
-        self.assertEqual(result["data_mode"], "sample")
-        self.assertEqual(result["model"], "test-model")
-        self.assertTrue(result["passed"])
-        self.assertTrue(result["checks"]["scores_unchanged"])
-        self.assertTrue(all(".example.com" in item["url"] for item in result["target"]["summary"]["citations"]))
-        self.assertEqual(self.calls, 0)
-        self.assertIsNone((await self.client.get("/api/briefings/latest?mode=sample")).json()["briefing"])
-        with closing(sqlite3.connect(self.database)) as connection:
-            saved = connection.execute("SELECT status, requests_used, result_json FROM sample_agent_runs").fetchone()
-        self.assertEqual(saved[:2], ("complete", 2))
-        self.assertIn('"data_mode": "sample"', saved[2])
-        limited = await self.client.post("/api/sample/investigate", json={})
-        self.assertEqual(limited.status_code, 429)
 
     async def test_default_pipeline_saves_feed_only_status_and_respects_source_failure(self):
         from courtside.sources import collect_sources

@@ -3,7 +3,6 @@ import json
 from pathlib import Path
 
 from .investigation import InvestigationSettings, investigate_briefing, publication_time
-from .llm import ChatProvider
 from scripts.validate_gdelt import canonical_url
 from .storage import initialize_database, read_briefings, read_run
 
@@ -75,16 +74,14 @@ def add_investigations(result, briefing, previous, settings_file=None, env_file=
                     if note not in uncertainty:
                         uncertainty.append(note)
         return briefing
-    provider = None
     try:
         path = Path(settings_file or PROJECT_ROOT / "config/investigation.json")
         settings = InvestigationSettings(**json.loads(path.read_text()))
         settings.validate()
-        provider = ChatProvider(settings, env_file or PROJECT_ROOT / ".env") if settings.provider == "openai-compatible" else None
-        return investigate_briefing(result, briefing, previous, settings, provider)
+        return investigate_briefing(result, briefing, previous, settings)
     except Exception:
         briefing["investigation"] = dict(status="unavailable", notice="Investigation is disabled or could not finish. Numerical scores are unchanged.",
-                                         llm_calls=getattr(provider, "calls_made", 0))
+                                         llm_calls=0)
         for candidate in briefing["candidates"] + briefing["stories"]:
             candidate["summary"] = None
             candidate["what_changed"] = None

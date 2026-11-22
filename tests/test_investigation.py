@@ -2,7 +2,6 @@ from copy import deepcopy
 from datetime import datetime, timezone
 import json
 from pathlib import Path
-from subprocess import CompletedProcess
 import tempfile
 import unittest
 from unittest.mock import patch
@@ -10,7 +9,6 @@ from unittest.mock import patch
 from courtside.investigation import (EvidenceTools, InvestigationSettings, RulesProvider,
                                      evidence_id, investigate_briefing, supported_summary, source_excerpt)
 from courtside.investigate import add_investigations
-from courtside.llm import ChatProvider
 from courtside.ranking import rank_stories
 from courtside.sample_data import sample_report
 from courtside.stories import process_report
@@ -21,10 +19,6 @@ def fixtures():
     return result, rank_stories(result)
 
 
-def provider_response(name, arguments, call_id="call_test"):
-    message = dict(content="PRIVATE_THOUGHTS_MUST_NOT_BE_SAVED", reasoning_content="PRIVATE_THOUGHTS_MUST_NOT_BE_SAVED",
-                   tool_calls=[dict(id=call_id, type="function", function=dict(name=name, arguments=json.dumps(arguments)))])
-    return CompletedProcess([], 0, json.dumps(dict(choices=[dict(message=message)])) + "\n200", "")
 
 
 class InvestigationTests(unittest.TestCase):
@@ -86,9 +80,8 @@ class InvestigationTests(unittest.TestCase):
         result, briefing = fixtures()
         for article in result["articles"]:
             article["investigation_allowed"] = False
-        with patch("courtside.investigate.ChatProvider") as provider, patch("courtside.investigate.investigate_briefing") as investigator:
+        with patch("courtside.investigate.investigate_briefing") as investigator:
             saved = add_investigations(result, briefing, [])
-        provider.assert_not_called()
         investigator.assert_not_called()
         self.assertEqual(saved["investigation"]["llm_calls"], 0)
         self.assertTrue(all(story["summary"] is None for story in saved["candidates"]))
@@ -174,14 +167,6 @@ class InvestigationTests(unittest.TestCase):
         self.assertEqual(investigated["investigation"]["steps_used"], 0)
         self.assertIsNone(investigated["candidates"][0]["summary"])
 
-    def test_llm_attempt_limit_applies_across_stories(self):
-        result, briefing = fixtures()
-        class FakeProvider(RulesProvider):
-            name = "test-provider"
-            uses_llm = True
-        investigated = investigate_briefing(result, briefing, settings=InvestigationSettings(max_llm_calls=2), provider=FakeProvider())
-        self.assertEqual(investigated["investigation"]["llm_calls"], 2)
-        self.assertEqual(investigated["investigation"]["status"], "partial")
 
     def test_unsupported_provider_summary_does_not_escape_into_logs(self):
         result, briefing = fixtures()
@@ -226,85 +211,14 @@ class InvestigationTests(unittest.TestCase):
         self.assertEqual(len(investigated["candidates"]), 2)
         self.assertTrue(any("different event" in message for message in investigated["candidates"][0]["investigation"]["uncertainty"]))
 
-    def test_disabled_llm_cannot_make_a_network_request(self):
-        result, briefing = fixtures()
-        with tempfile.TemporaryDirectory() as folder, patch.dict("os.environ", {}, clear=True):
-            settings = Path(folder) / "investigation.json"
-            settings.write_text(json.dumps(dict(provider="openai-compatible")))
-            env_file = Path(folder) / ".env"
-            env_file.write_text("LLM_API_KEY=test-private-key\nENABLE_LLM_CALLS=false\n")
-            with patch("subprocess.run", side_effect=AssertionError("Network must stay disabled")):
-                investigated = add_investigations(result, briefing, [], settings, env_file)
-        self.assertEqual(investigated["investigation"]["status"], "unavailable")
-        self.assertEqual(investigated["investigation"]["llm_calls"], 0)
 
-    def test_mocked_tool_calling_provider_and_key_handling(self):
-        result, briefing = fixtures()
-        target = briefing["candidates"][0]
-        article_id = evidence_id(target["evidence_urls"][0])
-        material = EvidenceTools(result, briefing, []).retrieve_material(article_id)
-        responses = [provider_response("retrieve_material", dict(article_id=article_id), "call_first"),
-                     provider_response("finish", dict(claims=[dict(evidence_id=article_id, quote=material["material"]["description"])]), "call_second")]
-        with tempfile.TemporaryDirectory() as folder, patch.dict("os.environ", {}, clear=True):
-            env_file = Path(folder) / ".env"
-            env_file.write_text("ENABLE_LLM_CALLS=true\nLLM_API_KEY=test-private-key\nLLM_MODEL=test-model\nLLM_BASE_URL=https://llm.example/v1\n")
-            settings = InvestigationSettings(provider="openai-compatible", max_llm_calls=2, max_stories=1)
-            provider = ChatProvider(settings, env_file)
-            with patch("courtside.llm.subprocess.run", side_effect=responses) as calls:
-                investigated = investigate_briefing(result, briefing, settings=settings, provider=provider)
-            self.assertEqual(calls.call_count, 2)
-            choices = []
-            for call in calls.call_args_list:
-                self.assertNotIn("test-private-key", str(call.args))
-                request_line = next(line for line in call.kwargs["input"].splitlines() if line.startswith("data = "))
-                payload = json.loads(json.loads(request_line.removeprefix("data = ")))
-                choices.append(payload["tool_choice"])
-                self.assertEqual(payload["messages"][-1]["role"], "user")
-                self.assertIn("final allowed call" if len(choices) == 2 else "2 API calls left", payload["messages"][-1]["content"])
-                self.assertEqual(payload["max_completion_tokens"], 1000)
-                self.assertFalse(payload["parallel_tool_calls"])
-            self.assertEqual(choices, ["required", {"type": "function", "function": {"name": "finish"}}])
-        self.assertEqual(investigated["investigation"]["llm_calls"], 2)
-        self.assertTrue(investigated["candidates"][0]["summary"])
-        self.assertNotIn("PRIVATE_THOUGHTS_MUST_NOT_BE_SAVED", json.dumps(investigated))
-        self.assertNotIn("test-private-key", json.dumps(investigated))
 
-    def test_provider_rate_limit_records_status_without_raw_error_text(self):
-        result, briefing = fixtures()
-        with tempfile.TemporaryDirectory() as folder, patch.dict("os.environ", {}, clear=True):
-            env_file = Path(folder) / ".env"
-            env_file.write_text("ENABLE_LLM_CALLS=true\nLLM_API_KEY=test-private-key\nLLM_MODEL=test-model\n")
-            settings = InvestigationSettings(provider="openai-compatible", max_stories=1)
-            provider = ChatProvider(settings, env_file)
-            response = CompletedProcess([], 0, '{"error":"test-private-key private provider details"}\n429', '')
-            with patch("courtside.llm.subprocess.run", return_value=response):
-                saved = investigate_briefing(result, briefing, settings=settings, provider=provider)
-        self.assertEqual(saved["candidates"][0]["investigation"]["provider_http_status"], 429)
-        self.assertNotIn("test-private-key", json.dumps(saved))
-        self.assertNotIn("private provider details", json.dumps(saved))
 
-    def test_invalid_limits_and_provider_urls_are_rejected(self):
-        for settings in [InvestigationSettings(max_steps=0), InvestigationSettings(max_llm_calls=100),
-                         InvestigationSettings(max_seconds=float("nan")), InvestigationSettings(provider="unknown")]:
+    def test_invalid_limits_and_paid_provider_settings_are_rejected(self):
+        for settings in [InvestigationSettings(max_steps=0), InvestigationSettings(max_articles_per_story=100),
+                         InvestigationSettings(max_seconds=float("nan")), InvestigationSettings(provider="openai-compatible")]:
             with self.assertRaises(ValueError):
                 settings.validate()
-        with tempfile.TemporaryDirectory() as folder, patch.dict("os.environ", {}, clear=True):
-            env_file = Path(folder) / ".env"
-            env_file.write_text("ENABLE_LLM_CALLS=true\nLLM_API_KEY=test-key\nLLM_MODEL=test-model\nLLM_BASE_URL=http://unknown.example/v1\n")
-            with self.assertRaises(ValueError):
-                ChatProvider(InvestigationSettings(), env_file)
-
-    def test_provider_input_limit_prevents_http_request(self):
-        result, briefing = fixtures()
-        with tempfile.TemporaryDirectory() as folder, patch.dict("os.environ", {}, clear=True):
-            env_file = Path(folder) / ".env"
-            env_file.write_text("ENABLE_LLM_CALLS=true\nLLM_API_KEY=test-key\nLLM_MODEL=test-model\n")
-            settings = InvestigationSettings(provider="openai-compatible", max_input_characters=1, max_stories=1)
-            provider = ChatProvider(settings, env_file)
-            with patch("courtside.llm.subprocess.run") as request:
-                investigated = investigate_briefing(result, briefing, settings=settings, provider=provider)
-            request.assert_not_called()
-        self.assertEqual(investigated["investigation"]["llm_calls"], 0)
 
 
 if __name__ == "__main__":

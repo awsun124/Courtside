@@ -30,10 +30,7 @@ Eastern while running. If started after 6 AM, it checks whether today's
 collection is needed. Daily attempts are saved in the database, including failures.
 Public news refreshes are disabled in scheduled mode. Reload reads saved data.
 
-The investigator uses rules by default. For optional LLM calls, configure
-LLM_BASE_URL, LLM_MODEL, and LLM_API_KEY, set ENABLE_LLM_CALLS=true, and change
-provider to openai-compatible in config/investigation.json. ENABLE_SAMPLE_AI=true enables
-the separate fictional AI demo. Leave both disabled to avoid model requests.
+The investigator runs locally using rules and saved excerpts. No model API key is needed.
 
 ```sh
 .venv/bin/python -m unittest discover -s tests

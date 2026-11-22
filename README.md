@@ -49,7 +49,7 @@ flowchart LR
 GitHub Actions collects and updates the data. FastAPI serves saved records; page loads and
 filters do not spend provider API credits. React/Vite is hosted on Vercel, the
 API on Render, and PostgreSQL on Neon. SQLite supports local development.
-No LLM calls run in the scheduled production jobs.
+The news investigator uses local rules and saved excerpts. It needs no paid model API.
 
 ## Run locally
 
@@ -82,22 +82,6 @@ on pull requests and pushes to `main`. Each run uploads its reports and tool
 traces for 14 days. **News quality gate** fails if a test or evaluation fails.
 To block merges, make that check required in the repository’s branch rules.
 The workflow uses no API keys and makes no model calls.
-
-### Optional model comparison
-
-```sh
-.venv/bin/python -m courtside.evals.compare_model
-```
-
-This only writes a plan. It does not read provider credentials or call a model.
-A live run requires `--execute`, an enabled server provider, `--max-usd`, and
-explicit `--input-usd-per-million` and `--output-usd-per-million` prices.
-Use `--cases`, `--max-cases`, `--max-requests` and `--output-tokens` to narrow a run.
-The dollar limit uses conservative estimates at the supplied prices, not a billing
-guarantee. Failed requests keep their reservations. Reports compare the same
-cases with rules and save tool activity, time and available token usage. Meaning
-review is still required. Live runs also verify `courtside/evals/rubric_freeze.json`;
-changed expectations or grading code need a new review before comparison. Paid runs are excluded from CI and do not change the site.
 
 ## Checks
 

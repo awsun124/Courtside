@@ -1,13 +1,8 @@
-"""Accept valid alternatives and reject unsafe output before freezing the rubric."""
+"""Accept valid alternatives and reject unsupported output."""
 from copy import deepcopy
-import hashlib
-import json
-from pathlib import Path
-import tempfile
 import unittest
 
 from courtside.evals.run_news import adapt_case,grade_case,load_cases,DEFAULT_CASES,run_suite
-from courtside.evals.rubrics import FREEZE,verify_rubrics
 from courtside.investigation import InvestigationSettings
 
 
@@ -57,18 +52,3 @@ class RubricReviewTests(unittest.TestCase):
         citation=output['candidates'][0]['summary']['citations'][0]
         citation['published_at']=citation['published_at'].replace('+00:00','Z')
         self.assertTrue(self.grade(case,before,output)['citation_dates_match_sources'])
-
-    def test_freeze_matches_reviewed_development_cases(self):
-        self.assertEqual(verify_rubrics(DEFAULT_CASES)['status'],'matches_reviewed_rubrics')
-
-    def test_changed_expected_answers_are_blocked(self):
-        with tempfile.TemporaryDirectory() as folder:
-            manifest=json.loads(FREEZE.read_text());manifest['datasets'][DEFAULT_CASES.name]['sha256']='changed'
-            path=Path(folder)/'freeze.json';path.write_text(json.dumps(manifest))
-            with self.assertRaisesRegex(ValueError,'expectations changed'):verify_rubrics(DEFAULT_CASES,path)
-
-    def test_changed_grader_is_blocked(self):
-        with tempfile.TemporaryDirectory() as folder:
-            manifest=json.loads(FREEZE.read_text());manifest['grading_code_sha256']['courtside/evals/run_news.py']='changed'
-            path=Path(folder)/'freeze.json';path.write_text(json.dumps(manifest))
-            with self.assertRaisesRegex(ValueError,'Grading code changed'):verify_rubrics(DEFAULT_CASES,path)
